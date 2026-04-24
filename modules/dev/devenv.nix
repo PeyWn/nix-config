@@ -1,0 +1,14 @@
+{ ... }:
+{
+  flake.modules.nixos.devenv = { pkgs, username, ... }: {
+    environment.systemPackages = [ pkgs.devenv ];
+
+    nix.settings = {
+      trusted-users = [ username ];
+      substituters = [ "https://devenv.cachix.org" ];
+      trusted-public-keys = [
+        "devenv.cachix.org-1:mIBmJ/WnH9Y3qhTrGMnYxoL1L1jkh1gbWtpFSEBi4Bc="
+      ];
+    };
+  };
+}

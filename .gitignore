@@ -1,0 +1,5 @@
+.cache/
+.nix-defexpr/
+.bash_history
+result
+result-*
