@@ -1,6 +1,6 @@
 { ... }:
 {
-  flake.modules.nixos.devenv = { pkgs, username, ... }: {
+  flake.modules.nixos.shell = { pkgs, username, ... }: {
     environment.systemPackages = [ pkgs.devenv ];
 
     nix.settings = {

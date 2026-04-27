@@ -1,18 +1,37 @@
 { ... }:
 {
-  flake.modules.nixos.shell = { pkgs, username, hostname, ... }: {
+  flake.modules.nixos.shell = { pkgs, username, ... }: {
+    programs.zsh.enable = true;
+    environment.systemPackages = with pkgs; [ ripgrep fzf ];
+    users.users.${username} = {
+      isNormalUser = true;
+      extraGroups = [ "wheel" ];
+      shell = pkgs.zsh;
+    };
+    security.sudo.wheelNeedsPassword = true;
+  };
+
+  flake.modules.homeManager.shell = { pkgs, hostname, ... }: {
+    home.packages = with pkgs; [ ripgrep fzf ];
+    programs.zoxide.enable = true;
+    programs.starship.enable = true;
     programs.zsh = {
       enable = true;
-      shellAliases.rebuild = "sudo nixos-rebuild switch --flake /home/nixos#${hostname}";
-      shellAliases.ds = "devenv shell";
-      shellAliases.dsc = "devenv shell -q '$@'";
-      shellAliases.dj = "devenv shell -q 'just $@'";
-      shellAliases.lg = "lazygit";
-      ohMyZsh = {
+      enableCompletion = true;
+      autosuggestion.enable = true;
+      syntaxHighlighting.enable = true;
+      shellAliases = {
+        rebuild = "sudo nixos-rebuild switch --flake /home/nixos#${hostname}";
+        ds = "devenv shell";
+        dsc = "devenv shell -q '$@'";
+        dj = "devenv shell -q 'just $@'";
+        lg = "lazygit";
+      };
+      oh-my-zsh = {
         enable = true;
         plugins = [ "git" "fzf" "yarn" "npm" ];
       };
-      interactiveShellInit = ''
+      initContent = ''
         fz() {
           local dir
           IFS=$'\n' dir=($(zoxide query -l | fzf-tmux -h 30% -w 90% --query="$1" --multi --select-1 --exit-0 | rg --only-matching '/.*'))
@@ -32,14 +51,5 @@
         }
       '';
     };
-    programs.starship.enable = true;
-    programs.zoxide.enable = true;
-    environment.systemPackages = [ pkgs.ripgrep pkgs.tmux pkgs.fzf pkgs.just ];
-    users.users.${username} = {
-      isNormalUser = true;
-      extraGroups = [ "wheel" ];
-      shell = pkgs.zsh;
-    };
-    security.sudo.wheelNeedsPassword = true;
   };
 }

@@ -1,6 +1,6 @@
 { config, ... }:
 {
-  flake.modules.nixos.tmux = { pkgs, ... }: {
+  flake.modules.nixos.shell = { pkgs, ... }: {
     programs.tmux = {
       enable = true;
       historyLimit = 25000;

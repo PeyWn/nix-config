@@ -2,7 +2,7 @@
 let
   hostname = "WSL-IC";
   username = "bjorn";
-  inherit (config.flake.modules) nixos;
+  inherit (config.flake.modules) nixos homeManager;
 in
 {
   configurations.nixos.${hostname}.module = {
@@ -11,14 +11,24 @@ in
       nixos.nix
       nixos.wsl
       nixos.shell
-      nixos.devtools
       nixos.git
-      nixos.devenv
       nixos.claude
-      nixos.home
-      nixos.lazyvim
+      nixos.devops
       nixos.ssh
-      nixos.tmux
+      {
+        imports = [ nixos.home ];
+        home-manager.backupFileExtension = "bak";
+        home-manager.extraSpecialArgs = { inherit username hostname; };
+        home-manager.users.${username} = {
+          imports = [
+            homeManager.shell
+            homeManager.lazyvim
+          ];
+          home.username = username;
+          home.homeDirectory = "/home/${username}";
+          home.stateVersion = "25.11";
+        };
+      }
     ];
     nixpkgs.hostPlatform = "x86_64-linux";
     networking.hostName = hostname;

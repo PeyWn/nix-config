@@ -19,11 +19,13 @@
     programs.lazygit = {
       enable = true;
       settings = {
-        git.pagings = [
-          { colorArg = "always"; pager = "${pkgs.delta}/bin/delta --dark --paging=never"; }
+        git.pagers = [
+          { colorArg = "always"; pager = "delta --dark --paging=never"; }
         ];
       };
     };
+
+    environment.sessionVariables.LAZYGIT_CONFIG_PATH = "/etc/xdg/lazygit/config.yml";
 
     environment.systemPackages = [ pkgs.delta ];
   };
