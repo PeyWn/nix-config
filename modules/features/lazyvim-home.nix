@@ -19,6 +19,10 @@
           installDependencies = true;
           installRuntimeDependencies = true;
         };
+        lang.dotnet.enable = true;
+        lang.rust.enable = true;
+        lang.toml.enable = true;
+        lang.docker.enable = true;
         formatting.prettier.enable = true;
         linting.eslint.enable = true;
       };
@@ -27,6 +31,7 @@
         # LSP
         nixd
         vtsls
+
 
         # Formatters
         alejandra
