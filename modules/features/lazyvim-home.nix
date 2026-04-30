@@ -73,6 +73,11 @@
                 folds = {
                   enbaled = true,
                 },
+                servers = {
+                  nixd = {
+                    cmd = { "devenv", "lsp" },
+                  },
+                },
               },
             },
           }
