@@ -12,9 +12,10 @@ in
       nixos.wsl
       nixos.shell
       nixos.git
-      nixos.claude
+      nixos.llm
       nixos.devops
       nixos.ssh
+      nixos.nixmate
       {
         imports = [ nixos.home ];
         home-manager.backupFileExtension = "bak";
