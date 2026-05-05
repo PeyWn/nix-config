@@ -20,6 +20,10 @@
     };
 
     lazyvim-nix.url = "github:pfassina/lazyvim-nix";
+
+    nixmate.url = "github:daskladas/nixmate";
+
+    llm-agents.url = "github:numtide/llm-agents.nix";
   };
 
   outputs =

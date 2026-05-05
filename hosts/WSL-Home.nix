@@ -14,6 +14,7 @@ in
       nixos.git
       nixos.devenv
       nixos.ssh
+      nixos.nixmate
       {
         imports = [ nixos.home ];
         home-manager.backupFileExtension = "bak";
