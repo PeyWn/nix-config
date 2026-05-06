@@ -5,8 +5,8 @@
 
     nix.settings = {
       trusted-users = [ username ];
-      substituters = [ "https://devenv.cachix.org" ];
-      trusted-public-keys = [
+      extra-substituters = [ "https://devenv.cachix.org" ];
+      extra-trusted-public-keys = [
         "devenv.cachix.org-1:mIBmJ/WnH9Y3qhTrGMnYxoL1L1jkh1gbWtpFSEBi4Bc="
       ];
     };
