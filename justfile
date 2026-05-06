@@ -4,7 +4,7 @@ default:
     just --list
 
 rebuild-WSL-HOME:
-    sudo nixos-rebuild switch --flake /home/nixos#WSL-HOME
+    sudo nixos-rebuild switch --flake /home/nixos#WSL-Home
 
 rebuild-IC:
     sudo nixos-rebuild switch --flake /home/nixos#WSL-IC
