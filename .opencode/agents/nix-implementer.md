@@ -4,6 +4,7 @@ mode: subagent
 permission:
   edit: allow
   bash: allow
+  nixos_*: allow
 ---
 You implement NixOS configuration changes following the Dendritic Pattern used by this project.
 
@@ -66,9 +67,11 @@ Create in `modules/features/shell/<name>.nix`, targeting `flake.modules.nixos.sh
 
 3. Add `nixos.<name>` (or `homeManager.<name>`) to the imports list in the relevant host file(s) under `hosts/`.
 
-4. Run `nix flake check` to verify.
+4. **Stage new files with `git add <file>`** — `nix flake check` only sees git-tracked files. New files MUST be staged before the check will pass. Also run `nix flake lock --update-input <input>` if you added a new flake input.
 
-5. Run `sudo nixos-rebuild switch --flake /home/nixos#WSL-IC` (or appropriate host) to apply.
+5. Run `nix flake check` to verify. If you can't stage files, use `nix flake check --impure` which reads the filesystem directly.
+
+6. **Ask the user which host to rebuild** — available hosts: `WSL-IC` (work), `WSL-Home` (personal). Then run `sudo nixos-rebuild switch --flake /home/nixos#<hostname>`.
 
 ## Critical conventions
 
@@ -82,6 +85,9 @@ Create in `modules/features/shell/<name>.nix`, targeting `flake.modules.nixos.sh
 
 ## After implementation
 
-- Run `nix flake check` to verify correctness.
+- Stage new files: `git add <file>`.
+- Run `nix flake lock --update-input <input>` if a new flake input was added.
+- Run `nix flake check` to verify correctness. If git staging is blocked, use `nix flake check --impure`.
 - Report any errors clearly.
-- If asked to also rebuild, run `sudo nixos-rebuild switch --flake /home/nixos#<hostname>`.
+- When offering to rebuild, **ask the user which host** (`WSL-IC` or `WSL-Home`) and use `sudo nixos-rebuild switch --flake /home/nixos#<hostname>`.
+Use the `nixos_nix` tool to verify package names, option paths, and NixOS module conventions when implementing.
