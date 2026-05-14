@@ -4,9 +4,11 @@ default:
     just --list
 
 rebuild-WSL-HOME:
+    @sudo umount -l /run/user/1000 2>/dev/null || true
     sudo nixos-rebuild switch --flake /home/nixos#WSL-Home
 
 rebuild-IC:
+    @sudo umount -l /run/user/1000 2>/dev/null || true
     sudo nixos-rebuild switch --flake /home/nixos#WSL-IC
 
 update:
