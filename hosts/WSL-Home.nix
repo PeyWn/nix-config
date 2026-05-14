@@ -12,7 +12,7 @@ in
       nixos.wsl
       nixos.shell
       nixos.git
-      nixos.devenv
+      nixos.llm
       nixos.ssh
       nixos.nixmate
       {

@@ -25,6 +25,7 @@
         lang.docker.enable = true;
         formatting.prettier.enable = true;
         linting.eslint.enable = true;
+        dap.core.enable = true;
       };
 
       extraPackages = with pkgs; [
@@ -35,9 +36,11 @@
 
         # Formatters
         alejandra
+        prettierd
 
         # Linters
         eslint
+        vscode-langservers-extracted
 
         # Tools
         ripgrep

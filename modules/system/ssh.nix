@@ -6,7 +6,7 @@
       extraConfig = ''
         Host ssh.dev.azure.com vs-ssh.visualstudio.com
           User git
-          IdentityFile ~/.ssh/id_rsa
+          IdentityFile ~/.ssh/id_work
           AddKeysToAgent 8h
           KexAlgorithms diffie-hellman-group14-sha256,diffie-hellman-group16-sha512,diffie-hellman-group-exchange-sha256,diffie-hellman-group18-sha512
 
