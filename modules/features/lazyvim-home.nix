@@ -85,6 +85,20 @@
             },
           }
         '';
+        claudecode = ''
+          return {
+            "coder/claudecode.nvim",
+            dependencies = { "folke/snacks.nvim" },
+            opts = {
+              terminal = {
+                provider = "external",
+                provider_opts = {
+                  external_terminal_cmd = "tmux split-window -h %s"
+                }
+              }
+            },
+          }
+        '';
       };
     };
 
