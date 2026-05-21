@@ -12,6 +12,10 @@
               y = 4;
             };
           };
+          terminal.shell = {
+            program = "${pkgs.zsh}/bin/zsh";
+            args = [ "-l" ];
+          };
           font = {
             size = 12;
             normal.family = "monospace";

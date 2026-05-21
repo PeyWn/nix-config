@@ -1,7 +1,7 @@
 { config, ... }:
 let
   hostname = "NixOS-Server";
-  username = "bjorn";
+  username = "peywn";
   inherit (config.flake.modules) nixos homeManager;
 in
 {
@@ -10,7 +10,8 @@ in
     imports = [
       nixos.nix
       nixos.desktop
-      nixos.niri
+      #nixos.niri
+      nixos.kde
       nixos.shell
       nixos.git
       nixos.llm
@@ -34,8 +35,16 @@ in
         };
       }
     ];
-    nixpkgs.hostPlatform = "x86_64-linux";
+
+    # Bootloader.
+    boot.loader.systemd-boot.enable = true;
+    boot.loader.efi.canTouchEfiVariables = true;
+
+    # Enable networking
     networking.hostName = hostname;
+    networking.networkmanager.enable = true;
+
+    nixpkgs.hostPlatform = "x86_64-linux";
     system.stateVersion = "25.11";
   };
 }

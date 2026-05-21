@@ -7,6 +7,7 @@
       isNormalUser = true;
       extraGroups = [ "wheel" ];
       shell = pkgs.zsh;
+      initialPassword = "nixos";
     };
     security.sudo.wheelNeedsPassword = true;
   };
