@@ -1,86 +1,48 @@
 { ... }:
 {
-  flake.modules.nixos.server = { config, lib, pkgs, ... }: {
-    services.home-assistant = {
-      enable = true;
-
-      configWritable = true;
-
-      openFirewall = true;
-
-      extraComponents = [
-        "default_config"
-        "cloud"
-        "met"
-        "esphome"
-        "zha"
-        "matter"
-        "mobile_app"
-        "google_assistant"
-      ];
-
-      customComponents = [];
-
-      extraPackages = python3Packages: with python3Packages; [
-        aioelectricitymaps
-        gtts
-        pychromecast
-        radios
-      ];
-
-      config = {
-        homeassistant = {
-          name = "Home";
-          latitude = 58.4186863;
-          longitude = 15.496391200000001;
-          unit_system = "metric";
-          temperature_unit = "C";
-          time_zone = "Europe/Stockholm";
-          currency = "SEK";
-          country = "SE";
-        };
-      };
-    };
-
-    users.users.hass.extraGroups = [ "dialout" ];
-
-    systemd.services.matter-server = {
-      description = "Python Matter Server";
-      after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        ExecStartPre = [
-          "+${pkgs.coreutils}/bin/mkdir -p /data"
-          "+${pkgs.coreutils}/bin/chown hass:hass /data"
+  flake.modules.nixos.server = { lib, ... }: {
+    virtualisation.oci-containers = {
+      backend = "podman";
+      containers."homeassistant" = {
+        image = "ghcr.io/home-assistant/home-assistant:stable";
+        autoStart = true;
+        volumes = [
+          "/var/lib/hass:/config"
+          "/etc/localtime:/etc/localtime:ro"
+          "/run/dbus:/run/dbus:ro"
+          "/var/run/avahi-daemon/socket:/var/run/avahi-daemon/socket:ro"
         ];
-        ExecStart = "${pkgs.python-matter-server}/bin/matter-server --storage-path /var/lib/matter-server";
-        User = "hass";
-        Group = "hass";
-        StateDirectory = "matter-server";
-        Restart = "on-failure";
-        RestartSec = "5s";
+        environment = {
+          TZ = "Europe/Stockholm";
+        };
+        extraOptions = [
+          "--network=host"
+          "--device=/dev/serial/by-id/usb-ITead_Sonoff_Zigbee_3.0_USB_Dongle_Plus_56273dd08b45ed1192d9c58f0a86e0b4-if00-port0"
+        ];
       };
     };
 
-    systemd.services.home-assistant.after = [ "matter-server.service" ];
-    systemd.services.home-assistant.requires = [ "matter-server.service" ];
+    services.matter-server = {
+      enable = true;
+      extraArgs.primary-interface = "wlp4s0";
+    };
 
-    # Wait for wlp4s0 to get an IPv4 address before starting HA, then append
-    # YAML include directives after the Nix-generated configuration.yaml.
-    systemd.services.home-assistant.preStart = lib.mkMerge [
-      (lib.mkBefore ''
-        while ! ${pkgs.iproute2}/bin/ip addr show wlp4s0 2>/dev/null | grep -q "inet " ; do
-          sleep 1
-        done
-      '')
-      (lib.mkAfter ''
-        cat >> /var/lib/hass/configuration.yaml << 'YAML'
+    services.avahi = {
+      enable = true;
+      nssmdns = true;
+    };
 
-automation: !include automations.yaml
-script: !include scripts.yaml
-scene: !include scenes.yaml
-YAML
-      '')
-    ];
+    systemd.services.matter-server.serviceConfig = {
+      ProtectProc = lib.mkForce "default";
+      BindReadOnlyPaths = [ "/sys/class/net" ];
+    };
+
+    networking.firewall = {
+      allowedTCPPorts = [ 8123 ];
+      allowedUDPPorts = [ 5353 ];
+      extraCommands = ''
+        iptables -A nixos-fw -p udp -d 224.0.0.251 --dport 5353 -j nixos-fw-accept
+      '';
+    };
   };
 }
