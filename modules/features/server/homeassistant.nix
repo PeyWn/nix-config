@@ -49,6 +49,7 @@
       after = [ "network.target" ];
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {
+        ExecStartPre = "+${pkgs.coreutils}/bin/mkdir -p /data && ${pkgs.coreutils}/bin/chown hass:hass /data";
         ExecStart = "${pkgs.python-matter-server}/bin/matter-server --storage-path /var/lib/matter-server";
         User = "hass";
         Group = "hass";
