@@ -10,9 +10,9 @@ in
     imports = [
       nixos.nix
       nixos.desktop
-      #nixos.niri
+      nixos.niri
+      #nixos.kde
       nixos.server
-      nixos.kde
       nixos.shell
       nixos.git
       nixos.llm
@@ -30,8 +30,6 @@ in
             homeManager.shell
             homeManager.lazyvim
           ];
-          home.username = username;
-          home.homeDirectory = "/home/${username}";
           home.stateVersion = "25.11";
         };
       }

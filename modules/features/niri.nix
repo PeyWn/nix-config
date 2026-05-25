@@ -7,6 +7,7 @@
         settings = {
           input.keyboard.xkb = {
             layout = "us";
+            options = "caps:escape";
           };
           spawn-at-startup = [
             "noctalia-shell"
@@ -38,13 +39,12 @@
             "Mod+Shift+R".reset-window-height = { };
           };
           layout = {
-            gap = 4;
-            border = {
+            gaps = 4;
+            focus-ring = {
               width = 2;
               active-color = "#7aa2f7";
               inactive-color = "#3b4261";
             };
-            focus-ring.enable = true;
             struts.left = 48;
           };
         };
