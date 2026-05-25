@@ -44,6 +44,23 @@
 
     users.users.hass.extraGroups = [ "dialout" ];
 
+    systemd.services.matter-server = {
+      description = "Python Matter Server";
+      after = [ "network.target" ];
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig = {
+        ExecStart = "${pkgs.python-matter-server}/bin/matter-server --storage-path /var/lib/matter-server";
+        User = "hass";
+        Group = "hass";
+        StateDirectory = "matter-server";
+        Restart = "on-failure";
+        RestartSec = "5s";
+      };
+    };
+
+    systemd.services.home-assistant.after = [ "matter-server.service" ];
+    systemd.services.home-assistant.requires = [ "matter-server.service" ];
+
     # Wait for wlp4s0 to get an IPv4 address before starting HA, then append
     # YAML include directives after the Nix-generated configuration.yaml.
     systemd.services.home-assistant.preStart = lib.mkMerge [
