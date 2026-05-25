@@ -10,8 +10,8 @@ in
     imports = [
       nixos.nix
       nixos.desktop
-      nixos.niri
-      #nixos.kde
+      #nixos.niri
+      nixos.kde
       nixos.server
       nixos.shell
       nixos.git
