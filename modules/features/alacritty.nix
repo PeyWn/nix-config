@@ -18,7 +18,7 @@
           };
           font = {
             size = 12;
-            normal.family = "monospace";
+            normal.family = "JetBrainsMono Nerd Font";
           };
           colors = {
             primary = {

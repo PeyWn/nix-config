@@ -51,7 +51,7 @@
           };
           ui = {
             fontDefault = "Sans Serif";
-            fontFixed = "monospace";
+            fontFixed = "JetBrainsMono Nerd Font";
           };
         };
       };

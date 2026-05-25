@@ -11,6 +11,7 @@ in
       nixos.nix
       nixos.desktop
       #nixos.niri
+      nixos.server
       nixos.kde
       nixos.shell
       nixos.git

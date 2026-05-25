@@ -15,6 +15,7 @@
     fonts.packages = with pkgs; [
       noto-fonts
       noto-fonts-color-emoji
+      nerd-fonts.jetbrains-mono
     ];
 
   # Set your time zone.
@@ -59,7 +60,5 @@
 
 
     services.dbus.enable = true;
-
-    services.greetd.enable = true;
   };
 }
