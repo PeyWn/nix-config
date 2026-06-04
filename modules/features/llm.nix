@@ -10,6 +10,15 @@
         claude-code
         opencode
       ])
-      ++ (with pkgs; [ mcp-nixos ]);
+      ++ (with pkgs; [
+        mcp-nixos
+        (python3.withPackages (ps: with ps; [
+          requests
+          httpx
+          pyyaml
+          rich
+          pydantic
+        ]))
+      ]);
   };
 }

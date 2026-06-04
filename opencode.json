@@ -1,0 +1,16 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "lsp": true,
+  "permission": {
+    "bash": {
+      "nix *": "allow",
+      "nixos-rebuild *": "allow",
+      "sudo nixos-rebuild *": "allow",
+      "rebuild": "allow",
+      "just *": "allow",
+      "nix-shell *": "allow",
+      "nix-env *": "allow",
+      "*": "ask"
+    }
+  }
+}
