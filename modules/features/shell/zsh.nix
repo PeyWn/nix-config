@@ -27,6 +27,7 @@
         dsc = "devenv shell -q '$@'";
         dj = "devenv shell -q 'just $@'";
         lg = "lazygit";
+        clip = "/mnt/c/Windows/System32/clip.exe";
       };
       oh-my-zsh = {
         enable = true;
