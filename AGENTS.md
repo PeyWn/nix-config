@@ -43,6 +43,56 @@ hosts/
 - The module name is the **filename without extension** (e.g., `git.nix` → `nixos.git`).
 - Per-host values are declared as `let` bindings in host files and passed via `_module.args { inherit username hostname; }`. Do NOT use `specialArgs`.
 
+## Home Assistant (NixOS-Server)
+
+- **Module**: `modules/features/server/homeassistant.nix` — targets `flake.modules.nixos.server`, imported by `NixOS-Server`
+- **Runtime dir**: `/var/lib/hass/` — `configuration.yaml`, `.storage/`, `zigbee.db`, `custom_components/`, `www/community/`, automations/scripts/scenes YAMLs
+- **Service**: `systemctl status|stop|start home-assistant`, logs at `journalctl -u home-assistant` + `/var/lib/hass/home-assistant.log`
+- **Port**: 8123 (firewall opened by `openFirewall = true`)
+
+### Nix config is authoritative
+
+On every service start, the preStart script copies `configuration.yaml` from `/nix/store` to `/var/lib/hass/`, overwriting manual edits. To inject directives that can't be expressed in Nix attrs (like `!include`), append them via `systemd.services.home-assistant.preStart = lib.mkAfter`. This runs after the copy.
+
+### Custom component strategy
+
+Custom integrations (HACS, Nordpool, MASS) are **runtime-managed** — not declared in `services.home-assistant.customComponents`. The backup migration copies them as real directories into `/var/lib/hass/custom_components/`. The preStart only removes `/nix/store` symlinks, not real dirs. Nix `customComponents = []` avoids collisions.
+
+### Extra Python packages
+
+Some custom components need pip packages (e.g., Nordpool needs `backoff`, `nordpool`). Add them to `services.home-assistant.extraPackages`:
+
+```nix
+extraPackages = python3Packages: with python3Packages; [ backoff ];
+```
+
+Check availability with `nix eval nixpkgs#python3Packages.<name>`.
+
+### Zigbee (ZHA)
+
+- The `hass` user must be in the `dialout` group for USB serial access
+- Coordinator path: `/dev/serial/by-id/usb-ITEAD_SONOFF_Zigbee_3.0_USB_Dongle_Plus_*`
+- ZHA network data lives in `zigbee.db` — copy from backup to preserve paired devices
+
+### Service debugging quick-ref
+
+```bash
+journalctl -u home-assistant --no-pager -n 100          # systemd log
+tail -100 /var/lib/hass/home-assistant.log                # HA internal log
+grep -i error /var/lib/hass/home-assistant.log | tail -30 # errors only
+systemctl cat home-assistant                             # service definition
+nix eval .#nixosConfigurations.NixOS-Server.config.systemd.services.home-assistant.preStart --raw  # check preStart
+```
+
+### Common failures
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `cannot overwrite directory` | Nix HACS symlink colliding with runtime HACS dir | Remove Nix `customComponents` HACS derivation |
+| `exec format error` / Python import fail | Custom component pip deps missing | Add to `extraPackages` |
+| ZHA won't start | `hass` user lacks USB access | `users.users.hass.extraGroups = [ "dialout" ]` |
+| Automations/scripts/scenes missing | `configuration.yaml` overwritten without `!include` | Use `lib.mkAfter` in preStart to inject includes |
+
 ## Gotchas
 
 - **Shell module is split across multiple files** in `features/shell/`. They all target `flake.modules.nixos.shell` and get merged. Add shell-related config to an existing file there, or create a new one targeting the same key.

@@ -1,7 +1,7 @@
 { config, ... }:
 let
-  hostname = "WSL-Home";
-  username = "bjorn";
+  hostname = "NixOS-Server";
+  username = "peywn";
   inherit (config.flake.modules) nixos homeManager;
 in
 {
@@ -9,12 +9,18 @@ in
     _module.args = { inherit username hostname; };
     imports = [
       nixos.nix
-      nixos.wsl
+      nixos.desktop
+      #nixos.niri
+      nixos.kde
+      nixos.server
       nixos.shell
       nixos.git
       nixos.llm
       nixos.ssh
-      nixos.nixmate
+      nixos.brave
+      nixos.alacritty
+      nixos.noctalia
+      ../hardware/NixOS-Server.nix
       {
         imports = [ nixos.home ];
         home-manager.backupFileExtension = "bak";
@@ -28,8 +34,16 @@ in
         };
       }
     ];
-    nixpkgs.hostPlatform = "x86_64-linux";
+
+    # Bootloader.
+    boot.loader.systemd-boot.enable = true;
+    boot.loader.efi.canTouchEfiVariables = true;
+
+    # Enable networking
     networking.hostName = hostname;
+    networking.networkmanager.enable = true;
+
+    nixpkgs.hostPlatform = "x86_64-linux";
     system.stateVersion = "25.11";
   };
 }

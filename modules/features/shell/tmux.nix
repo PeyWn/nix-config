@@ -14,6 +14,7 @@
       ];
       extraConfig = ''
         set -g mouse on
+        set -g set-clipboard on
         set -g status-position top
         set-option -g focus-events on
 

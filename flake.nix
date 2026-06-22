@@ -24,6 +24,8 @@
     nixmate.url = "github:daskladas/nixmate";
 
     llm-agents.url = "github:numtide/llm-agents.nix";
+
+    nix-wrapper-modules.url = "github:BirdeeHub/nix-wrapper-modules";
   };
 
   outputs =

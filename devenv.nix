@@ -1,5 +1,5 @@
 { pkgs, lib, config, inputs, ... }:
 
 {
-  packages = [ pkgs.nixd ];
+  packages = [ pkgs.nixd pkgs.alejandra ];
 }
