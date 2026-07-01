@@ -22,5 +22,6 @@
       curl
       libkrb5
     ];
+    environment.systemPackages = with pkgs; [ gsettings-desktop-schemas ];
   };
 }
