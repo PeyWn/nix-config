@@ -1,4 +1,4 @@
-{ ... }:
+{ inputs, ... }:
 {
   flake.modules.nixos.git = { pkgs, ... }: {
     programs.git = {
@@ -27,6 +27,9 @@
 
     environment.sessionVariables.LAZYGIT_CONFIG_PATH = "/etc/xdg/lazygit/config.yml";
 
-    environment.systemPackages = [ pkgs.delta ];
+    environment.systemPackages = [
+      pkgs.delta
+      inputs.treehouse.packages.${pkgs.system}.default
+    ];
   };
 }

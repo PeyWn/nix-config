@@ -26,6 +26,11 @@
     llm-agents.url = "github:numtide/llm-agents.nix";
 
     nix-wrapper-modules.url = "github:BirdeeHub/nix-wrapper-modules";
+
+    treehouse = {
+      url = "github:kunchenguid/treehouse";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
