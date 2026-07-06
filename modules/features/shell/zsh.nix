@@ -13,6 +13,7 @@
   };
 
   flake.modules.homeManager.shell = { pkgs, hostname, ... }: {
+    home.sessionPath = [ "$HOME/bin" ];
     home.packages = with pkgs; [ ripgrep fzf ];
     programs.zoxide.enable = true;
     programs.starship.enable = true;
