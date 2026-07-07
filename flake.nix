@@ -25,6 +25,8 @@
 
     llm-agents.url = "github:numtide/llm-agents.nix";
 
+    herdr.url = "github:ogulcancelik/herdr";
+
     nix-wrapper-modules.url = "github:BirdeeHub/nix-wrapper-modules";
 
     treehouse = {
