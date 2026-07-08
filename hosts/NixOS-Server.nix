@@ -3,7 +3,7 @@ let
   hostname = "NixOS-Server";
   username = "peywn";
   scheme = config.flake.customSchemes.everforest-light;
-  inherit (config.flake.modules) nixos homeManager;
+  inherit (config.flake.modules) nixos;
 in
 {
   configurations.nixos.${hostname}.module = {
@@ -23,19 +23,7 @@ in
       nixos.alacritty
       nixos.noctalia
       ../hardware/NixOS-Server.nix
-      {
-        imports = [ nixos.home ];
-        home-manager.backupFileExtension = "bak";
-        home-manager.extraSpecialArgs = { inherit username hostname scheme; };
-        home-manager.users.${username} = {
-          imports = [
-            homeManager.shell
-            homeManager.lazyvim
-            homeManager.theme
-          ];
-          home.stateVersion = "25.11";
-        };
-      }
+      nixos.home
     ];
 
     boot.loader.systemd-boot.enable = true;
