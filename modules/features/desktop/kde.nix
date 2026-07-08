@@ -1,8 +1,6 @@
-{ config, ... }:
+{ ... }:
 {
-  flake.modules.nixos.kde = { pkgs, config, ... }: {
-    services.xserver.enable = true;
-
+  flake.modules.nixos.kde = { pkgs, ... }: {
     services.displayManager.sddm.enable = true;
     services.desktopManager.plasma6.enable = true;
 

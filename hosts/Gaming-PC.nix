@@ -1,7 +1,7 @@
 { inputs, config, ... }:
 let
-  hostname = "NixOS-Server";
-  username = "peywn";
+  hostname = "Gaming-PC";
+  username = "bjorn";
   scheme = let
     themeEnv = builtins.getEnv "NIX_THEME";
   in if themeEnv != "" then config.flake.customSchemes.${themeEnv}
@@ -15,9 +15,9 @@ in
       nixos.nix
       nixos.desktop-core
       nixos.theme
-      #nixos.niri
+      nixos.niri
       nixos.kde
-      nixos.server
+      nixos.steam
       nixos.shell
       nixos.git
       nixos.llm
@@ -25,7 +25,7 @@ in
       nixos.brave
       nixos.alacritty
       nixos.noctalia
-      ../hardware/NixOS-Server.nix
+      ../hardware/Gaming-PC.nix
       nixos.home
     ];
 

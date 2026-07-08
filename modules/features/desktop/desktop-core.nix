@@ -1,16 +1,8 @@
 { ... }:
 {
-  flake.modules.nixos.desktop = { pkgs, ... }: {
+  flake.modules.nixos.desktop-core = { pkgs, ... }: {
   
     services.xserver.enable = true;
-
-    #xdg.portal = {
-    #  enable = true;
-    #  extraPortals = with pkgs; [
-    #    xdg-desktop-portal-gtk
-    #    xdg-desktop-portal-wlr
-    #  ];
-    #};
 
     fonts.packages = with pkgs; [
       noto-fonts
@@ -18,10 +10,8 @@
       nerd-fonts.jetbrains-mono
     ];
 
-  # Set your time zone.
   time.timeZone = "Europe/Stockholm";
 
-  # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
 
   i18n.extraLocaleSettings = {
@@ -36,10 +26,8 @@
     LC_TIME = "sv_SE.UTF-8";
   };
 
-  # Enable CUPS to print documents.
   services.printing.enable = true;
 
-  # Enable sound with pipewire.
   services.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
@@ -47,17 +35,7 @@
     alsa.enable = true;
     alsa.support32Bit = true;
     pulse.enable = true;
-    # If you want to use JACK applications, uncomment this
-    #jack.enable = true;
-
-    # use the example session manager (no others are packaged yet so this is enabled by default,
-    # no need to redefine it in your config for now)
-    #media-session.enable = true;
   };
-
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.xserver.libinput.enable = true;
-
 
     services.dbus.enable = true;
   };

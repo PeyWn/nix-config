@@ -1,6 +1,6 @@
 { inputs, ... }:
 {
-  flake.modules.nixos.niri = { pkgs, config, ... }:
+  flake.modules.nixos.niri = { pkgs, config, lib, ... }:
     let
       c = config.theme.colors;
       wrapped-niri = inputs.nix-wrapper-modules.wrappers.niri.wrap {
@@ -52,7 +52,15 @@
       };
     in
     {
-      environment.systemPackages = [ wrapped-niri ];
+      programs.niri = {
+        enable = true;
+        package = wrapped-niri;
+        useNautilus = true;
+      };
+
+      services.gnome.gcr-ssh-agent.enable = lib.mkForce false;
+
+      xdg.portal.wlr.enable = true;
 
       services.greetd.settings.default_session.command =
         "${pkgs.tuigreet}/bin/tuigreet --time --cmd ${wrapped-niri}/bin/niri";
