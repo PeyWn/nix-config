@@ -2,6 +2,8 @@
 {
   flake.modules.nixos.git = { pkgs, config, ... }: let
     c = config.theme.colors;
+    git-tidy-branches = pkgs.writeShellScriptBin "git-tidy-branches"
+      (builtins.readFile ./scripts/git-tidy-branches);
   in {
     programs.git = {
       enable = true;
@@ -46,6 +48,7 @@
 
     environment.systemPackages = [
       pkgs.delta
+      git-tidy-branches
       inputs.treehouse.packages.${pkgs.system}.default
     ];
   };

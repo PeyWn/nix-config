@@ -1,0 +1,402 @@
+#!/usr/bin/env bash
+#
+# git-tidy-branches — safely remove stale and merged local branches.
+#
+# Built for a squash-and-rebase merge workflow, where `git branch --merged`
+# MISSES most merged branches (their commits never become ancestors of the base
+# branch). It uses several detection strategies, labels each branch with the one
+# that matched, and refuses to auto-delete anything ambiguous — those are listed
+# under "NEEDS MANUAL REVIEW" instead.
+#
+# Install: place on PATH as `git-tidy-branches` (e.g. ~/bin) and run as
+#          `git tidy-branches`. Repo-agnostic; no deps beyond git + coreutils.
+#
+# Strategies (deletion candidates):
+#   merged        — branch tip is an ancestor of the base branch
+#   squash-merged — branch's cumulative diff already exists in base (patch-equiv)
+#   upstream-gone — upstream tracking branch was deleted AND content is in base
+#
+# Manual-review buckets (never auto-deleted):
+#   unpushed       — ahead of upstream (commits not on the remote)
+#   diverged       — ahead AND behind upstream
+#   gone-unmerged  — upstream gone but content NOT found in base (possible lost work)
+#   stale-unmerged — older than --stale-days and not merged
+
+set -euo pipefail
+
+# ---------------------------------------------------------------------------
+# Defaults / options
+# ---------------------------------------------------------------------------
+BASE=""
+DRY_RUN=0
+ASSUME_YES=0
+STALE_DAYS=90
+DO_FETCH=1
+PRUNE_REMOTE=0
+EXTRA_PROTECT=()
+
+usage() {
+  cat <<'EOF'
+git tidy-branches — remove stale/merged local branches (squash & rebase aware)
+
+Usage: git tidy-branches [options]
+
+  --base <branch>     Base branch to compare against
+                      (default: auto-detect origin/HEAD, else main/master)
+  --dry-run           Show the review screen and exit; delete nothing
+  -y, --yes           Skip the confirmation prompt (for scripted use)
+  --stale-days <n>    Age threshold for "stale-unmerged" (default: 90)
+  --protect <globs>   Extra protected branch patterns, comma-separated
+                      (e.g. "hotfix/*,keep-me")
+  --no-fetch          Skip the initial 'git fetch --prune'
+  --prune-remote      Also run 'git remote prune origin' (never deletes on origin)
+  -h, --help          Show this help
+
+Deletes LOCAL branches only. Recovery lines (git branch <name> <sha>) are printed
+for every deletion so anything removed can be restored from the reflog.
+EOF
+}
+
+# ---------------------------------------------------------------------------
+# Output helpers (TTY / NO_COLOR aware)
+# ---------------------------------------------------------------------------
+if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
+  C_RESET=$'\033[0m'; C_BOLD=$'\033[1m'; C_DIM=$'\033[2m'
+  C_RED=$'\033[31m'; C_GREEN=$'\033[32m'; C_YELLOW=$'\033[33m'
+  C_BLUE=$'\033[34m'; C_CYAN=$'\033[36m'
+else
+  C_RESET=""; C_BOLD=""; C_DIM=""; C_RED=""; C_GREEN=""; C_YELLOW=""; C_BLUE=""; C_CYAN=""
+fi
+
+info()  { printf '%s\n' "$*"; }
+warn()  { printf '%s%s%s\n' "$C_YELLOW" "$*" "$C_RESET" >&2; }
+die()   { printf '%serror:%s %s\n' "$C_RED" "$C_RESET" "$*" >&2; exit 1; }
+
+# ---------------------------------------------------------------------------
+# Argument parsing
+# ---------------------------------------------------------------------------
+parse_args() {
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --base)        [ $# -ge 2 ] || die "--base requires a value"; BASE="$2"; shift 2;;
+      --dry-run)     DRY_RUN=1; shift;;
+      -y|--yes)      ASSUME_YES=1; shift;;
+      --stale-days)  [ $# -ge 2 ] || die "--stale-days requires a value"; STALE_DAYS="$2"; shift 2;;
+      --protect)     [ $# -ge 2 ] || die "--protect requires a value"
+                     IFS=',' read -r -a _p <<< "$2"; EXTRA_PROTECT+=("${_p[@]}"); shift 2;;
+      --no-fetch)    DO_FETCH=0; shift;;
+      --prune-remote) PRUNE_REMOTE=1; shift;;
+      -h|--help)     usage; exit 0;;
+      *)             die "unknown option: $1 (see --help)";;
+    esac
+  done
+  case "$STALE_DAYS" in ''|*[!0-9]*) die "--stale-days must be a non-negative integer";; esac
+}
+
+# ---------------------------------------------------------------------------
+# Preflight
+# ---------------------------------------------------------------------------
+HAS_ORIGIN=0
+detect_base() {
+  if [ -n "$BASE" ]; then return; fi
+  local sym
+  if sym=$(git symbolic-ref --quiet refs/remotes/origin/HEAD 2>/dev/null); then
+    BASE="${sym#refs/remotes/origin/}"
+    return
+  fi
+  local b
+  for b in main master; do
+    if git show-ref --verify --quiet "refs/heads/$b" \
+       || git show-ref --verify --quiet "refs/remotes/origin/$b"; then
+      BASE="$b"; return
+    fi
+  done
+  die "could not determine a base branch; pass --base <branch>"
+}
+
+# ---------------------------------------------------------------------------
+# Protection matching
+# ---------------------------------------------------------------------------
+DEFAULT_PROTECT=(main master develop "release/*")
+is_protected() {
+  local name="$1" pat
+  [ "$name" = "$BASE" ] && return 0
+  for pat in "${DEFAULT_PROTECT[@]}" "${EXTRA_PROTECT[@]:-}"; do
+    [ -z "$pat" ] && continue
+    # shellcheck disable=SC2053
+    [[ "$name" == $pat ]] && return 0
+  done
+  return 1
+}
+
+# ---------------------------------------------------------------------------
+# Classification buckets (parallel arrays: name / meta)
+# ---------------------------------------------------------------------------
+declare -a SAFE_NAME=()  SAFE_SHA=()  SAFE_DATE=() SAFE_AB=()   SAFE_STRAT=()
+declare -a REV_NAME=()   REV_DATE=()  REV_AB=()    REV_STRAT=()
+declare -a SKIP_DESC=()
+declare -a ACTIVE_NAME=()
+
+# checked-out branches (in this or any linked worktree) -> worktree path
+declare -A WT_PATH=()
+
+collect_worktrees() {
+  local line wt="" br
+  while IFS= read -r line; do
+    case "$line" in
+      "worktree "*) wt="${line#worktree }";;
+      "branch refs/heads/"*) br="${line#branch refs/heads/}"; WT_PATH["$br"]="$wt";;
+    esac
+  done < <(git worktree list --porcelain 2>/dev/null)
+}
+
+# Is $1 content already present in base? (ancestor OR patch-equivalent/squash)
+# Checked against every ref in BASE_REFS (origin/BASE and/or local BASE) so a
+# stale local base or an offline origin doesn't cause false negatives.
+# Sets STRAT_OUT to "merged" or "squash-merged", returns 0 if merged.
+STRAT_OUT=""
+content_in_base() {
+  local tip="$2" ref mb tree synthetic cherry
+  STRAT_OUT=""
+  [ "${#BASE_REFS[@]}" -eq 0 ] && return 1
+  for ref in "${BASE_REFS[@]}"; do
+    if git merge-base --is-ancestor "$tip" "$ref" 2>/dev/null; then
+      STRAT_OUT="merged"; return 0
+    fi
+  done
+  # squash/rebase detection via patch-equivalence
+  for ref in "${BASE_REFS[@]}"; do
+    mb=$(git merge-base "$ref" "$tip" 2>/dev/null) || continue
+    tree=$(git rev-parse "${tip}^{tree}" 2>/dev/null) || continue
+    # Fixed identity so the throwaway commit succeeds even without user git config.
+    synthetic=$(git -c user.name=tidy -c user.email=tidy@local \
+                    commit-tree "$tree" -p "$mb" -m _ 2>/dev/null) || continue
+    cherry=$(git cherry "$ref" "$synthetic" 2>/dev/null) || continue
+    case "$cherry" in
+      "-"*) STRAT_OUT="squash-merged"; return 0;;
+    esac
+  done
+  return 1
+}
+
+classify() {
+  local now name up track unixd reld sha
+  local SEP=$'\x1f'   # unit separator: non-whitespace, so empty fields are NOT collapsed
+  now=$(date +%s)
+  while IFS="$SEP" read -r name up track unixd reld sha; do
+    [ -z "$name" ] && continue
+
+    # 1) Skip: checked out in a worktree
+    if [ -n "${WT_PATH[$name]:-}" ]; then
+      local wt="${WT_PATH[$name]}"
+      if [ "$name" = "$CURRENT" ]; then
+        SKIP_DESC+=("$name ${C_DIM}(current branch)${C_RESET}")
+      else
+        SKIP_DESC+=("$name ${C_DIM}(checked out in $wt)${C_RESET}")
+      fi
+      continue
+    fi
+
+    # 2) Skip: protected
+    if is_protected "$name"; then
+      local tag=""; [ "$name" = "$BASE" ] && tag=", base"
+      SKIP_DESC+=("$name ${C_DIM}(protected$tag)${C_RESET}")
+      continue
+    fi
+
+    # parse ahead/behind/gone from upstream:track
+    local ahead=0 behind=0 gone=0
+    case "$track" in *gone*) gone=1;; esac
+    [[ "$track" =~ ahead\ ([0-9]+) ]]  && ahead=${BASH_REMATCH[1]}
+    [[ "$track" =~ behind\ ([0-9]+) ]] && behind=${BASH_REMATCH[1]}
+
+    local ab
+    if [ -n "$up" ]; then ab="${ahead}/${behind}"; else ab="-/-"; fi
+
+    # 3) Deletion candidate? content already in base
+    if content_in_base "$name" "$sha"; then
+      local strat="$STRAT_OUT"
+      SAFE_NAME+=("$name"); SAFE_SHA+=("$sha"); SAFE_DATE+=("$reld")
+      SAFE_AB+=("$ab");     SAFE_STRAT+=("$strat")
+      continue
+    fi
+
+    # 4) Manual-review buckets (content NOT in base)
+    if [ "$ahead" -gt 0 ] && [ "$behind" -gt 0 ]; then
+      REV_NAME+=("$name"); REV_DATE+=("$reld"); REV_AB+=("$ab")
+      REV_STRAT+=("diverged (${ahead} ahead / ${behind} behind origin)")
+      continue
+    fi
+    if [ "$ahead" -gt 0 ]; then
+      REV_NAME+=("$name"); REV_DATE+=("$reld"); REV_AB+=("$ab")
+      REV_STRAT+=("unpushed (${ahead} commit(s) not on origin)")
+      continue
+    fi
+    if [ "$gone" -eq 1 ]; then
+      REV_NAME+=("$name"); REV_DATE+=("$reld"); REV_AB+=("$ab")
+      REV_STRAT+=("gone-unmerged (upstream deleted; content NOT in $BASE)")
+      continue
+    fi
+    # stale?
+    local age_days=$(( (now - ${unixd:-$now}) / 86400 ))
+    if [ "$age_days" -ge "$STALE_DAYS" ]; then
+      REV_NAME+=("$name"); REV_DATE+=("$reld"); REV_AB+=("$ab")
+      REV_STRAT+=("stale-unmerged (${age_days}d old, not in $BASE)")
+      continue
+    fi
+
+    # otherwise: an ordinary active branch
+    ACTIVE_NAME+=("$name")
+  done < <(git for-each-ref \
+      --format="%(refname:short)${SEP}%(upstream:short)${SEP}%(upstream:track,nobracket)${SEP}%(committerdate:unix)${SEP}%(committerdate:relative)${SEP}%(objectname)" \
+      refs/heads/)
+}
+
+# ---------------------------------------------------------------------------
+# Review screen
+# ---------------------------------------------------------------------------
+hr() { printf '%s── %s %s%s\n' "$C_BOLD" "$1" "$(printf '%.0s─' $(seq 1 $((60 - ${#1}))))" "$C_RESET"; }
+
+# widths for aligned tables
+col_widths() {
+  NAME_W=6
+  local n
+  for n in "${SAFE_NAME[@]:-}" "${REV_NAME[@]:-}"; do
+    if [ -n "$n" ] && [ "${#n}" -gt "$NAME_W" ]; then NAME_W="${#n}"; fi
+  done
+  return 0
+}
+
+render_review() {
+  col_widths
+  local fetched_note=""
+  [ "$DO_FETCH" -eq 1 ] && [ "$HAS_ORIGIN" -eq 1 ] && fetched_note=" ${C_DIM}(fetched & pruned)${C_RESET}"
+  printf '\n%sBase:%s %s%s\n\n' "$C_BOLD" "$C_RESET" "$BASE" "$fetched_note"
+
+  local i
+  # SAFE
+  printf '%s' "$C_GREEN"; hr "SAFE TO DELETE"; printf '%s' "$C_RESET"
+  if [ "${#SAFE_NAME[@]}" -eq 0 ]; then
+    printf '  %s(none)%s\n' "$C_DIM" "$C_RESET"
+  else
+    printf "  %s%-${NAME_W}s  %-13s  %-9s  %s%s\n" \
+      "$C_DIM" "branch" "last commit" "ahead/beh" "strategy" "$C_RESET"
+    for i in "${!SAFE_NAME[@]}"; do
+      printf "  ${C_GREEN}%-${NAME_W}s${C_RESET}  %-13s  %-9s  %s%s%s\n" \
+        "${SAFE_NAME[$i]}" "${SAFE_DATE[$i]}" "${SAFE_AB[$i]}" \
+        "$C_CYAN" "${SAFE_STRAT[$i]}" "$C_RESET"
+    done
+  fi
+  echo
+
+  # REVIEW
+  printf '%s' "$C_YELLOW"; hr "NEEDS MANUAL REVIEW (kept)"; printf '%s' "$C_RESET"
+  if [ "${#REV_NAME[@]}" -eq 0 ]; then
+    printf '  %s(none)%s\n' "$C_DIM" "$C_RESET"
+  else
+    for i in "${!REV_NAME[@]}"; do
+      printf "  ${C_YELLOW}%-${NAME_W}s${C_RESET}  %-13s  %-9s  %s\n" \
+        "${REV_NAME[$i]}" "${REV_DATE[$i]}" "${REV_AB[$i]}" "${REV_STRAT[$i]}"
+    done
+  fi
+  echo
+
+  # SKIPPED / ACTIVE (compact)
+  printf '%s' "$C_DIM"; hr "SKIPPED / KEPT"; printf '%s' "$C_RESET"
+  if [ "${#SKIP_DESC[@]}" -gt 0 ]; then
+    for i in "${!SKIP_DESC[@]}"; do printf '  %b\n' "${SKIP_DESC[$i]}"; done
+  fi
+  if [ "${#ACTIVE_NAME[@]}" -gt 0 ]; then
+    printf '  %sactive:%s %s\n' "$C_DIM" "$C_RESET" "$(IFS=', '; echo "${ACTIVE_NAME[*]}")"
+  fi
+  echo
+
+  printf '%sSummary:%s %d to delete, %d need review, %d skipped, %d active.\n\n' \
+    "$C_BOLD" "$C_RESET" \
+    "${#SAFE_NAME[@]}" "${#REV_NAME[@]}" "${#SKIP_DESC[@]}" "${#ACTIVE_NAME[@]}"
+}
+
+# ---------------------------------------------------------------------------
+# Deletion
+# ---------------------------------------------------------------------------
+confirm_and_delete() {
+  local count="${#SAFE_NAME[@]}"
+  [ "$count" -eq 0 ] && { info "Nothing to delete."; return; }
+  [ "$DRY_RUN" -eq 1 ] && { info "${C_DIM}Dry run — no branches deleted.${C_RESET}"; return; }
+
+  if [ "$ASSUME_YES" -ne 1 ]; then
+    if [ ! -t 0 ]; then
+      warn "Not an interactive terminal; re-run with --yes to delete. Nothing deleted."
+      return
+    fi
+    printf '%sDelete the %d branch(es) above?%s [y/N] ' "$C_BOLD" "$count" "$C_RESET"
+    local reply=""
+    read -r reply < /dev/tty || true
+    case "$reply" in [yY]|[yY][eE][sS]) ;; *) info "Aborted. Nothing deleted."; return;; esac
+  fi
+
+  local i name sha
+  info ""
+  for i in "${!SAFE_NAME[@]}"; do
+    name="${SAFE_NAME[$i]}"; sha="${SAFE_SHA[$i]}"
+    printf '%s# recover: git branch %s %s%s\n' "$C_DIM" "$name" "${sha:0:12}" "$C_RESET"
+    if git branch -D "$name" >/dev/null 2>&1; then
+      printf '%s✓%s deleted %s\n' "$C_GREEN" "$C_RESET" "$name"
+    else
+      warn "failed to delete $name (skipped)"
+    fi
+  done
+  info ""
+
+  if [ "$PRUNE_REMOTE" -eq 1 ] && [ "$HAS_ORIGIN" -eq 1 ]; then
+    info "Pruning stale remote-tracking refs (origin)…"
+    git remote prune origin || warn "remote prune failed"
+  fi
+  return 0
+}
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+main() {
+  parse_args "$@"
+
+  git rev-parse --is-inside-work-tree >/dev/null 2>&1 \
+    || die "not inside a git working tree"
+
+  if git remote get-url origin >/dev/null 2>&1; then HAS_ORIGIN=1; fi
+
+  CURRENT=$(git symbolic-ref --quiet --short HEAD 2>/dev/null || true)
+  [ -z "$CURRENT" ] && warn "detached HEAD — no branch is checked out"
+
+  if [ "$DO_FETCH" -eq 1 ] && [ "$HAS_ORIGIN" -eq 1 ]; then
+    info "${C_DIM}Fetching origin (--prune)…${C_RESET}"
+    git fetch --prune --quiet origin || warn "fetch failed; proceeding with local state"
+  fi
+
+  detect_base
+
+  if [ "$HAS_ORIGIN" -eq 0 ]; then
+    warn "no 'origin' remote — 'upstream-gone' detection unavailable; comparing against local $BASE"
+  fi
+
+  # Compare against both the remote and local base ref when available, so a stale
+  # local base or an unpushed base commit doesn't cause false "unmerged" results.
+  BASE_REFS=()
+  if [ "$HAS_ORIGIN" -eq 1 ] && git show-ref --verify --quiet "refs/remotes/origin/$BASE"; then
+    BASE_REFS+=("origin/$BASE")
+  fi
+  if git show-ref --verify --quiet "refs/heads/$BASE"; then
+    BASE_REFS+=("$BASE")
+  fi
+  if [ "${#BASE_REFS[@]}" -eq 0 ]; then
+    warn "base '$BASE' not found locally or on origin — merged/squash detection disabled"
+  fi
+
+  collect_worktrees
+  classify
+  render_review
+  confirm_and_delete
+}
+
+main "$@"
