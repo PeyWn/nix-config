@@ -1,6 +1,8 @@
 { inputs, ... }:
 {
-  flake.modules.nixos.git = { pkgs, ... }: {
+  flake.modules.nixos.git = { pkgs, config, ... }: let
+    c = config.theme.colors;
+  in {
     programs.git = {
       enable = true;
       config = {
@@ -10,7 +12,22 @@
         interactive.diffFilter = "delta --color-only";
         delta = {
           navigate = true;
-          dark = true;
+          side-by-side = false;
+          minus-style = "syntax #${c.base08}";
+          minus-emph-style = "syntax bold #${c.base08}";
+          plus-style = "syntax #${c.base0B}";
+          plus-emph-style = "syntax bold #${c.base0B}";
+          line-numbers-minus-style = "#${c.base08}";
+          line-numbers-plus-style = "#${c.base0B}";
+          line-numbers-zero-style = "#${c.base03}";
+          hunk-header-decoration-style = "#${c.base0D} box";
+          hunk-header-file-style = "#${c.base05}";
+          hunk-header-line-number-style = "#${c.base03}";
+          file-style = "#${c.base05}";
+          file-decoration-style = "#${c.base0D} box";
+          commit-style = "raw";
+          commit-decoration-style = "#${c.base0C} box";
+          whitespace-error-style = "reverse #${c.base08}";
         };
         merge.conflictstyle = "diff3";
         diff.colorMoved = "default";
@@ -20,7 +37,7 @@
       enable = true;
       settings = {
         git.pagers = [
-          { colorArg = "always"; pager = "delta --dark --paging=never"; }
+          { colorArg = "always"; pager = "delta --paging=never"; }
         ];
       };
     };

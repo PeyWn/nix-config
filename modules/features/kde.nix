@@ -1,23 +1,20 @@
-
-{ ... }:
+{ config, ... }:
 {
-  flake.modules.nixos.kde = { pkgs, ... }: {
-    #environment.systemPackages = with pkgs; [ k9s kubectl kubelogin-oidc ];
-    
-    # Enable the X11 windowing system.
-    # You can disable this if you're only using the Wayland session.
+  flake.modules.nixos.kde = { pkgs, config, ... }: {
     services.xserver.enable = true;
 
-    # Enable the KDE Plasma Desktop Environment.
     services.displayManager.sddm.enable = true;
     services.desktopManager.plasma6.enable = true;
 
-    # Configure keymap in X11
     services.xserver.xkb = {
       layout = "us";
       variant = "";
       options = "caps:escape";
     };
 
+    qt = {
+      enable = true;
+      platformTheme = "kde";
+    };
   };
 }

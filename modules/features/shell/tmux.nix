@@ -1,6 +1,7 @@
 { config, ... }:
 {
-  flake.modules.nixos.shell = { pkgs, ... }: let
+  flake.modules.nixos.shell = { pkgs, config, ... }: let
+    c = config.theme.colors;
     ts = pkgs.writeShellApplication {
       name = "ts";
       runtimeInputs = with pkgs; [ tmux fzf ];
@@ -80,33 +81,32 @@
       mkdir -p "$STATE_DIR"
       STATEFILE="$STATE_DIR/$tpgid"
 
+      GREEN="#${c.base0B}"
+      RED="#${c.base08}"
+      CYAN="#${c.base0C}"
+
       if $running; then
         rm -f "$STATEFILE"
-        echo -n "#[fg=green]● "
+        echo -n "#[fg=$GREEN]● "
       elif $stopped; then
         rm -f "$STATEFILE"
-        echo -n "#[fg=red]● "
+        echo -n "#[fg=$RED]● "
       else
-        # All foreground processes are sleeping (S/D state).
-        # Track how long the group has been continuously asleep.
-        # Green when active/recently running (<THRESHOLD),
-        # cyan when sustained sleep suggests waiting for user input.
         now=$(date +%s)
         THRESHOLD=10
         if [ -f "$STATEFILE" ]; then
           start=$(cat "$STATEFILE")
           if [ $((now - start)) -ge "$THRESHOLD" ]; then
-            echo -n "#[fg=cyan]● "
+            echo -n "#[fg=$CYAN]● "
           else
-            echo -n "#[fg=green]● "
+            echo -n "#[fg=$GREEN]● "
           fi
         else
           echo "$now" > "$STATEFILE"
-          echo -n "#[fg=green]● "
+          echo -n "#[fg=$GREEN]● "
         fi
       fi
 
-      # Remove state files for dead process groups
       for f in "$STATE_DIR"/*; do
         t=$(basename "$f")
         pgrep -g "$t" >/dev/null 2>&1 || rm -f "$f"
@@ -132,21 +132,19 @@
         set -g status-position top
         set-option -g focus-events on
 
-        # auto-rename windows to current command
         set -g automatic-rename on
         set -g automatic-rename-format "#{pane_current_command}"
 
-        # status bar
         set -g status-right "#(pomo)"
-        set -g status-style "fg=#665c54"
-        set -g status-left-style "fg=#928374"
+        set -g status-style "fg=#${c.base03}"
+        set -g status-left-style "fg=#${c.base04}"
         set -g status-bg default
         set -g status-interval 1
         set -g status-left ""
 
-        set-window-option -g window-status-current-style fg=yellow
-        set -g window-status-format "#(${tmux-window-status}/bin/tmux-window-status #{pane_pid})#[fg=#928374]#I:#W"
-        set -g window-status-current-format "#(${tmux-window-status}/bin/tmux-window-status #{pane_pid})#[fg=yellow]#I:#W"
+        set-window-option -g window-status-current-style "fg=#${c.base0A}"
+        set -g window-status-format "#(${tmux-window-status}/bin/tmux-window-status #{pane_pid})#[fg=#${c.base04}]#I:#W"
+        set -g window-status-current-format "#(${tmux-window-status}/bin/tmux-window-status #{pane_pid})#[fg=#${c.base0A}]#I:#W"
 
         setw -g pane-base-index 1
       '';

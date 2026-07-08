@@ -29,6 +29,8 @@
 
     nix-wrapper-modules.url = "github:BirdeeHub/nix-wrapper-modules";
 
+    nix-colors.url = "github:misterio77/nix-colors";
+
     treehouse = {
       url = "github:kunchenguid/treehouse";
       inputs.nixpkgs.follows = "nixpkgs";

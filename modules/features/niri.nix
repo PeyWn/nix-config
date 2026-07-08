@@ -1,7 +1,8 @@
 { inputs, ... }:
 {
-  flake.modules.nixos.niri = { pkgs, ... }:
+  flake.modules.nixos.niri = { pkgs, config, ... }:
     let
+      c = config.theme.colors;
       wrapped-niri = inputs.nix-wrapper-modules.wrappers.niri.wrap {
         inherit pkgs;
         settings = {
@@ -42,8 +43,8 @@
             gaps = 4;
             focus-ring = {
               width = 2;
-              active-color = "#7aa2f7";
-              inactive-color = "#3b4261";
+              active-color = "#${c.base0D}";
+              inactive-color = "#${c.base02}";
             };
             struts.left = 48;
           };
