@@ -1,7 +1,7 @@
 { inputs, config, ... }:
 let
   hostname = "Zephyrus";
-  username = "bjorn";
+  username = "peywn";
   scheme = let
     themeEnv = builtins.getEnv "NIX_THEME";
   in if themeEnv != "" then config.flake.customSchemes.${themeEnv}
@@ -40,6 +40,8 @@ in
       "nvidia-x11"
       "nvidia-settings"
       "nvidia-persistenced"
+      "steam"
+      "steam-unwrapped"
     ];
 
     nixpkgs.hostPlatform = "x86_64-linux";
