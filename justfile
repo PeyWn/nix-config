@@ -1,15 +1,19 @@
-#!/usr/bin/env -S just --justfile
+# !/usr/bin/env -S just --justfile
 [private]
 default:
     just --list
 
-rebuild-WSL-HOME:
-    @sudo umount -l /run/user/1000 2>/dev/null || true
-    sudo nixos-rebuild switch --flake /home/nixos#WSL-Home
+rebuild theme:
+    zsh -i -c "rebuild -- --theme {{theme}}"
 
-rebuild-IC:
-    @sudo umount -l /run/user/1000 2>/dev/null || true
-    sudo nixos-rebuild switch --flake /home/nixos#WSL-IC
+switch-IC theme:
+    sudo NIX_THEME="{{theme}}" nixos-rebuild switch --impure --flake /home/nixos#WSL-IC
+
+switch-WSL-Home theme:
+    sudo NIX_THEME="{{theme}}" nixos-rebuild switch --impure --flake /home/nixos#WSL-Home
+
+switch-Server theme:
+    sudo NIX_THEME="{{theme}}" nixos-rebuild switch --impure --flake /home/nixos#NixOS-Server
 
 update:
     nix flake update

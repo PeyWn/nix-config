@@ -25,6 +25,30 @@ let
         base0F = "56635f";
       };
     };
+    solarized-dark = {
+      slug = "solarized-dark";
+      name = "Solarized Dark";
+      author = "Ethan Schoonover";
+      variant = "dark";
+      palette = {
+        base00 = "002b36";
+        base01 = "073642";
+        base02 = "586e75";
+        base03 = "657b83";
+        base04 = "839496";
+        base05 = "93a1a1";
+        base06 = "eee8d5";
+        base07 = "fdf6e3";
+        base08 = "dc322f";
+        base09 = "cb4b16";
+        base0A = "b58900";
+        base0B = "859900";
+        base0C = "2aa198";
+        base0D = "268bd2";
+        base0E = "6c71c4";
+        base0F = "d33682";
+      };
+    };
     everforest-light = {
       slug = "everforest-light";
       name = "Everforest Light";
@@ -57,7 +81,7 @@ in {
     options.theme = {
       name = lib.mkOption {
         type = lib.types.str;
-        default = scheme.slug or "everforest-light";
+        default = scheme.slug;
       };
       variant = lib.mkOption {
         type = lib.types.enum [ "dark" "light" ];

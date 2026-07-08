@@ -3,7 +3,6 @@
   flake.modules.nixos.home = { username, scheme, ... }:
     let
       p = scheme.palette;
-      slug = scheme.slug or "everforest-light";
       isDark = scheme.variant == "dark";
 
       mkOpenCodeTheme = palette: {
@@ -63,9 +62,7 @@
       };
 
       openCodeTheme = mkOpenCodeTheme p;
-      openCodeThemeName =
-        if slug == "everforest" then "everforest"
-        else slug;
+      openCodeThemeName = scheme.slug;
     in
     {
       home-manager.users.${username} = {
@@ -76,7 +73,7 @@
           theme = openCodeThemeName;
         };
 
-        home.file.".config/opencode/themes/${slug}.json".text = builtins.toJSON openCodeTheme;
+        home.file.".config/opencode/themes/${scheme.slug}.json".text = builtins.toJSON openCodeTheme;
 
         home.file.".config/glow/glow.yml".text = "style: \"${if isDark then "dark" else "light"}\"\n";
 

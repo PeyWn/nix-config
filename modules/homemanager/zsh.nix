@@ -11,7 +11,6 @@
         autosuggestion.enable = true;
         syntaxHighlighting.enable = true;
         shellAliases = {
-          rebuild = "sudo nixos-rebuild switch --flake /home/nixos#${hostname}";
           ds = "devenv shell";
           dsc = "devenv shell -q '$@'";
           dj = "devenv shell -q 'just $@'";
@@ -23,6 +22,23 @@
           plugins = [ "git" "fzf" "yarn" "npm" ];
         };
         initContent = ''
+          rebuild() {
+            local theme_flag=""
+            local args=()
+            while [[ $# -gt 0 ]]; do
+              case $1 in
+                --theme)
+                  theme_flag="$2"; shift 2 ;;
+                *) args+=("$1"); shift ;;
+              esac
+            done
+            if [[ -n "$theme_flag" ]]; then
+              sudo NIX_THEME="$theme_flag" nixos-rebuild switch --impure --flake "/home/nixos#${hostname}" "''${args[@]}"
+            else
+              sudo nixos-rebuild switch --flake "/home/nixos#${hostname}" "''${args[@]}"
+            fi
+          }
+
           fz() {
             local dir
             IFS=$'\n' dir=($(zoxide query -l | fzf-tmux -h 30% -w 90% --query="$1" --multi --select-1 --exit-0 | rg --only-matching '/.*'))
