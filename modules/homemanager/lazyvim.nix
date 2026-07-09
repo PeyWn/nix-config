@@ -2,7 +2,7 @@
 {
   flake.modules.nixos.home = { pkgs, username, scheme, ... }:
     let
-      isEverforest = scheme.slug == "everforest" || scheme.slug == "everforest-light";
+      isEverforest = scheme.slug == "everforest-dark" || scheme.slug == "everforest-light";
 
       lazyvimColorschemePlugin =
         if isEverforest then ''
@@ -11,7 +11,7 @@
             lazy = false,
             priority = 1000,
             config = function()
-              vim.g.everforest_background = "medium"
+              vim.g.everforest_background = "soft"
               vim.o.background = "${if scheme.variant == "dark" then "dark" else "light"}"
               vim.cmd.colorscheme("everforest")
             end

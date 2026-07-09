@@ -5,7 +5,7 @@ let
   scheme = let
     themeEnv = builtins.getEnv "NIX_THEME";
   in if themeEnv != "" then config.flake.customSchemes.${themeEnv}
-     else config.flake.customSchemes.everforest;
+     else config.flake.customSchemes.everforest-dark;
   inherit (config.flake.modules) nixos;
 in
 {

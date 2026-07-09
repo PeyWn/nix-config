@@ -2,7 +2,7 @@
 {
   flake.modules.nixos.alacritty = { pkgs, config, ... }:
     let
-      c = config.theme.colors;
+      p = config.theme.palette;
       wrapped-alacritty = inputs.nix-wrapper-modules.wrappers.alacritty.wrap {
         inherit pkgs;
         settings = {
@@ -23,28 +23,32 @@
           };
           colors = {
             primary = {
-              background = "#${c.base00}";
-              foreground = "#${c.base05}";
+              background = "#${p.bg0}";
+              foreground = "#${p.fg}";
             };
             normal = {
-              black = "#${c.base00}";
-              red = "#${c.base08}";
-              green = "#${c.base0B}";
-              yellow = "#${c.base0A}";
-              blue = "#${c.base0D}";
-              magenta = "#${c.base0E}";
-              cyan = "#${c.base0C}";
-              white = "#${c.base05}";
+              black   = "#${p.bg3}";
+              red     = "#${p.red}";
+              green   = "#${p.green}";
+              yellow  = "#${p.yellow}";
+              blue    = "#${p.blue}";
+              magenta = "#${p.purple}";
+              cyan    = "#${p.aqua}";
+              white   = "#${p.fg}";
             };
             bright = {
-              black = "#${c.base01}";
-              red = "#${c.base08}";
-              green = "#${c.base0B}";
-              yellow = "#${c.base0A}";
-              blue = "#${c.base0D}";
-              magenta = "#${c.base0E}";
-              cyan = "#${c.base0C}";
-              white = "#${c.base07}";
+              black   = "#${p.bg3}";
+              red     = "#${p.red}";
+              green   = "#${p.green}";
+              yellow  = "#${p.yellow}";
+              blue    = "#${p.blue}";
+              magenta = "#${p.purple}";
+              cyan    = "#${p.aqua}";
+              white   = "#${p.fg}";
+            };
+            selection = {
+              background = "#${p.bg_visual}";
+              text       = "#${p.fg}";
             };
           };
         };

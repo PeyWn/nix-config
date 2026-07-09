@@ -1,8 +1,8 @@
 { ... }:
 {
-  flake.modules.nixos.home = { username, scheme, ... }:
+  flake.modules.nixos.home = { username, config, ... }:
     let
-      p = scheme.palette;
+      p = config.theme.colors;
     in
     {
       home-manager.users.${username} = {

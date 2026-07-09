@@ -33,9 +33,9 @@
               esac
             done
             if [[ -n "$theme_flag" ]]; then
-              sudo NIX_THEME="$theme_flag" nixos-rebuild switch --impure --flake "/home/nixos#${hostname}" "''${args[@]}"
+              sudo NIX_THEME="$theme_flag" nixos-rebuild switch --impure --flake "$HOME/.config/nixos#${hostname}" "''${args[@]}"
             else
-              sudo nixos-rebuild switch --flake "/home/nixos#${hostname}" "''${args[@]}"
+              sudo nixos-rebuild switch --flake "$HOME/.config/nixos#${hostname}" "''${args[@]}"
             fi
           }
 

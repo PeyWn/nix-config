@@ -24,6 +24,7 @@
       "git remote *": "allow",
       "git stash list": "allow",
       "git stash show *": "allow",
+      "git add *": "allow",
       "which *": "allow",
       "type *": "allow",
       "command *": "allow",
@@ -41,6 +42,7 @@
       "head *": "allow",
       "tail *": "allow",
       "wc *": "allow",
+      "nix *": "allow",
       "*": "ask"
     },
     "external_directory": "ask",

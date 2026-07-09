@@ -2,6 +2,7 @@
 {
   flake.modules.nixos.git = { pkgs, config, ... }: let
     c = config.theme.colors;
+    p = config.theme.palette;
     git-tidy-branches = pkgs.writeShellScriptBin "git-tidy-branches"
       (builtins.readFile ./scripts/git-tidy-branches);
   in {
@@ -15,10 +16,10 @@
         delta = {
           navigate = true;
           side-by-side = false;
-          minus-style = "syntax #${c.base08}";
-          minus-emph-style = "syntax bold #${c.base08}";
-          plus-style = "syntax #${c.base0B}";
-          plus-emph-style = "syntax bold #${c.base0B}";
+          minus-style = "syntax #${p.bg_red}";
+          minus-emph-style = "syntax bold #${p.bg_red}";
+          plus-style = "syntax #${p.bg_green}";
+          plus-emph-style = "syntax bold #${p.bg_green}";
           line-numbers-minus-style = "#${c.base08}";
           line-numbers-plus-style = "#${c.base0B}";
           line-numbers-zero-style = "#${c.base03}";

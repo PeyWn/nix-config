@@ -1,52 +1,39 @@
 { ... }:
 let
   customSchemes = {
-    everforest = {
-      slug = "everforest";
-      name = "Everforest";
+    everforest-dark = {
+      slug = "everforest-dark";
+      name = "Everforest Dark";
       author = "Sainnhe Park";
       variant = "dark";
       palette = {
-        base00 = "2d353b";
-        base01 = "343f44";
-        base02 = "3d484d";
-        base03 = "7a8478";
-        base04 = "9da9a0";
-        base05 = "d3c6aa";
-        base06 = "e4e1cd";
-        base07 = "fdf6e3";
-        base08 = "e67e80";
-        base09 = "e69875";
-        base0A = "dbbc7f";
-        base0B = "a7c080";
-        base0C = "83c092";
-        base0D = "7fbbb3";
-        base0E = "d699b6";
-        base0F = "56635f";
-      };
-    };
-    solarized-dark = {
-      slug = "solarized-dark";
-      name = "Solarized Dark";
-      author = "Ethan Schoonover";
-      variant = "dark";
-      palette = {
-        base00 = "002b36";
-        base01 = "073642";
-        base02 = "586e75";
-        base03 = "657b83";
-        base04 = "839496";
-        base05 = "93a1a1";
-        base06 = "eee8d5";
-        base07 = "fdf6e3";
-        base08 = "dc322f";
-        base09 = "cb4b16";
-        base0A = "b58900";
-        base0B = "859900";
-        base0C = "2aa198";
-        base0D = "268bd2";
-        base0E = "6c71c4";
-        base0F = "d33682";
+        bg_dim    = "293136";
+        bg0       = "333c43";
+        bg1       = "3a464c";
+        bg2       = "434f55";
+        bg3       = "4d5960";
+        bg4       = "555f66";
+        bg5       = "5d6b66";
+        bg_visual = "5c3f4f";
+        bg_red    = "59464c";
+        bg_yellow = "55544a";
+        bg_green  = "48584e";
+        bg_blue   = "3f5865";
+        bg_purple = "4e4953";
+        fg       = "d3c6aa";
+        red      = "e67e80";
+        orange   = "e69875";
+        yellow   = "dbbc7f";
+        green    = "a7c080";
+        aqua     = "83c092";
+        blue     = "7fbbb3";
+        purple   = "d699b6";
+        grey0    = "7a8478";
+        grey1    = "859289";
+        grey2    = "9da9a0";
+        statusline1 = "a7c080";
+        statusline2 = "d3c6aa";
+        statusline3 = "e67e80";
       };
     };
     everforest-light = {
@@ -55,22 +42,33 @@ let
       author = "Sainnhe Park";
       variant = "light";
       palette = {
-        base00 = "fdf6e3";
-        base01 = "f4f0d9";
-        base02 = "efebd4";
-        base03 = "a6b0a0";
-        base04 = "829181";
-        base05 = "5c6a72";
-        base06 = "2d353b";
-        base07 = "d3c6aa";
-        base08 = "f85552";
-        base09 = "f57d26";
-        base0A = "dfa000";
-        base0B = "8da101";
-        base0C = "35a77c";
-        base0D = "3a94c5";
-        base0E = "df69ba";
-        base0F = "bdc3af";
+        bg_dim    = "e5dfc5";
+        bg0       = "f3ead3";
+        bg1       = "eae4ca";
+        bg2       = "e5dfc5";
+        bg3       = "ddd8be";
+        bg4       = "d8d3ba";
+        bg5       = "b9c0ab";
+        bg_visual = "e1e4bd";
+        bg_red    = "fadbd0";
+        bg_yellow = "f1e4c5";
+        bg_green  = "e5e6c5";
+        bg_blue   = "e1e7dd";
+        bg_purple = "f1ddd4";
+        fg       = "5c6a72";
+        red      = "f85552";
+        orange   = "f57d26";
+        yellow   = "dfa000";
+        green    = "8da101";
+        aqua     = "35a77c";
+        blue     = "3a94c5";
+        purple   = "df69ba";
+        grey0    = "a6b0a0";
+        grey1    = "939f91";
+        grey2    = "829181";
+        statusline1 = "93b259";
+        statusline2 = "708089";
+        statusline3 = "e66868";
       };
     };
   };
@@ -91,42 +89,24 @@ in {
         type = lib.types.attrsOf lib.types.str;
         readOnly = true;
       };
+      palette = lib.mkOption {
+        type = lib.types.attrsOf lib.types.str;
+        readOnly = true;
+      };
     };
 
-    config.theme.colors = {
-      base00 = p.base00;
-      base01 = p.base01;
-      base02 = p.base02;
-      base03 = p.base03;
-      base04 = p.base04;
-      base05 = p.base05;
-      base06 = p.base06;
-      base07 = p.base07;
-      base08 = p.base08;
-      base09 = p.base09;
-      base0A = p.base0A;
-      base0B = p.base0B;
-      base0C = p.base0C;
-      base0D = p.base0D;
-      base0E = p.base0E;
-      base0F = p.base0F;
-      bg = p.base00;
-      bgAlt = p.base01;
-      bgSelection = p.base02;
-      fg = p.base05;
-      fgDim = p.base04;
-      fgMuted = p.base03;
-      red = p.base08;
-      orange = p.base09;
-      yellow = p.base0A;
-      green = p.base0B;
-      cyan = p.base0C;
-      blue = p.base0D;
-      purple = p.base0E;
-      magenta = p.base0F;
-      border = p.base02;
-      brightBg = p.base07;
-      brightFg = p.base06;
+    config.theme = {
+      colors = {
+        base00 = p.bg0;       base08 = p.red;
+        base01 = p.bg1;       base09 = p.orange;
+        base02 = p.bg2;       base0A = p.yellow;
+        base03 = p.grey0;     base0B = p.green;
+        base04 = p.grey1;     base0C = p.aqua;
+        base05 = p.fg;        base0D = p.blue;
+        base06 = p.grey2;     base0E = p.purple;
+        base07 = p.bg4;       base0F = p.orange;
+      };
+      palette = p;
     };
   };
 
