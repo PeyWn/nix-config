@@ -1,7 +1,7 @@
 { inputs, config, ... }:
 let
-  hostname = "Gaming-PC";
-  username = "bjorn";
+  hostname = "NixOS-Server";
+  username = "peywn";
   scheme = let
     themeEnv = builtins.getEnv "NIX_THEME";
   in if themeEnv != "" then config.flake.customSchemes.${themeEnv}
@@ -14,10 +14,11 @@ in
     imports = [
       nixos.nix
       nixos.desktop-core
+      nixos.home
+      nixos.userPeywn
       nixos.theme
-      nixos.niri
       nixos.kde
-      nixos.gaming
+      nixos.server
       nixos.shell
       nixos.git
       nixos.llm
@@ -25,16 +26,12 @@ in
       nixos.brave
       nixos.alacritty
       nixos.noctalia
-      ../hardware/Gaming-PC.nix
-      nixos.home
+      ./_hardware.nix
     ];
-
     boot.loader.systemd-boot.enable = true;
     boot.loader.efi.canTouchEfiVariables = true;
-
     networking.hostName = hostname;
     networking.networkmanager.enable = true;
-
     nixpkgs.hostPlatform = "x86_64-linux";
     system.stateVersion = "25.11";
   };

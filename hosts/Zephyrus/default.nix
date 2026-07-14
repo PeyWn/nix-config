@@ -1,6 +1,6 @@
-{ inputs, config, ... }:
+{ inputs, config, lib, ... }:
 let
-  hostname = "NixOS-Server";
+  hostname = "Zephyrus";
   username = "peywn";
   scheme = let
     themeEnv = builtins.getEnv "NIX_THEME";
@@ -14,10 +14,12 @@ in
     imports = [
       nixos.nix
       nixos.desktop-core
+      nixos.home
+      nixos.userPeywn
       nixos.theme
-      #nixos.niri
+      nixos.niri
       nixos.kde
-      nixos.server
+      nixos.gaming
       nixos.shell
       nixos.git
       nixos.llm
@@ -25,16 +27,20 @@ in
       nixos.brave
       nixos.alacritty
       nixos.noctalia
-      ../hardware/NixOS-Server.nix
-      nixos.home
+      inputs.nixos-hardware.nixosModules.asus-zephyrus-ga401iv
+      ./_hardware.nix
     ];
-
     boot.loader.systemd-boot.enable = true;
     boot.loader.efi.canTouchEfiVariables = true;
-
     networking.hostName = hostname;
     networking.networkmanager.enable = true;
-
+    nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
+      "nvidia-x11"
+      "nvidia-settings"
+      "nvidia-persistenced"
+      "steam"
+      "steam-unwrapped"
+    ];
     nixpkgs.hostPlatform = "x86_64-linux";
     system.stateVersion = "25.11";
   };

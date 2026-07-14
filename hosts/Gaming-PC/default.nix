@@ -1,7 +1,7 @@
 { inputs, config, ... }:
 let
-  hostname = "WSL-Home";
-  username = "bjorn";
+  hostname = "Gaming-PC";
+  username = "peywn";
   scheme = let
     themeEnv = builtins.getEnv "NIX_THEME";
   in if themeEnv != "" then config.flake.customSchemes.${themeEnv}
@@ -13,17 +13,27 @@ in
     _module.args = { inherit username hostname scheme; };
     imports = [
       nixos.nix
-      nixos.wsl
+      nixos.desktop-core
+      nixos.home
+      nixos.userPeywn
       nixos.theme
+      nixos.niri
+      nixos.kde
+      nixos.gaming
       nixos.shell
       nixos.git
       nixos.llm
       nixos.ssh
-      nixos.nixmate
-      nixos.home
+      nixos.brave
+      nixos.alacritty
+      nixos.noctalia
+      ./_hardware.nix
     ];
-    nixpkgs.hostPlatform = "x86_64-linux";
+    boot.loader.systemd-boot.enable = true;
+    boot.loader.efi.canTouchEfiVariables = true;
     networking.hostName = hostname;
+    networking.networkmanager.enable = true;
+    nixpkgs.hostPlatform = "x86_64-linux";
     system.stateVersion = "25.11";
   };
 }
