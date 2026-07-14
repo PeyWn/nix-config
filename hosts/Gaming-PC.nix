@@ -17,7 +17,7 @@ in
       nixos.theme
       nixos.niri
       nixos.kde
-      nixos.steam
+      nixos.gaming
       nixos.shell
       nixos.git
       nixos.llm

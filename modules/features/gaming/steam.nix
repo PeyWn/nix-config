@@ -1,6 +1,6 @@
 { ... }:
 {
-  flake.modules.nixos.steam = { pkgs, ... }: {
+  flake.modules.nixos.gaming = { pkgs, ... }: {
     programs.steam = {
       enable = true;
       gamescopeSession.enable = true;
