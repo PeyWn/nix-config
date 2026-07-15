@@ -15,7 +15,7 @@ in
       nixos.nix
       nixos.wsl
       nixos.home
-      nixos.userPeywn
+      nixos.user
       nixos.theme
       nixos.shell
       nixos.git

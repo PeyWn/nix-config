@@ -1,7 +1,7 @@
 { ... }:
 {
-  flake.modules.nixos.userPeywn = { pkgs, ... }: {
-    users.users.peywn = {
+  flake.modules.nixos.user = { pkgs, username, ... }: {
+    users.users.${username} = {
       isNormalUser = true;
       extraGroups = [ "wheel" ];
       shell = pkgs.zsh;

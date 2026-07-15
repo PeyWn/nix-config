@@ -15,7 +15,7 @@ in
       nixos.nix
       nixos.desktop-core
       nixos.home
-      nixos.userPeywn
+      nixos.user
       nixos.theme
       nixos.kde
       nixos.server
