@@ -1,0 +1,6 @@
+{
+  "thoughts": "thoughts",
+  "agents": {
+    "model": "deepseek-v4-pro"
+  }
+}
