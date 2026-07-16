@@ -14,6 +14,11 @@
     );
   };
 
+  options.homeManagerModules = lib.mkOption {
+    type = lib.types.lazyAttrsOf lib.types.unspecified;
+    default = { };
+  };
+
   config.flake.nixosConfigurations = lib.flip lib.mapAttrs config.configurations.nixos (
     name: { module }: lib.nixosSystem { modules = [ module ]; }
   );

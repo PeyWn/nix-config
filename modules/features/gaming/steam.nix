@@ -1,6 +1,12 @@
-{ ... }:
+{ lib, ... }:
 {
   flake.modules.nixos.gaming = { pkgs, ... }: {
+    nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
+      "steam"
+      "steam-unwrapped"
+      "steam-original"
+      "steam-run"
+    ];
     programs.steam = {
       enable = true;
       gamescopeSession.enable = true;

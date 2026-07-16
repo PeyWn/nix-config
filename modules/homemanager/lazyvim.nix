@@ -1,6 +1,6 @@
 { ... }:
 {
-  flake.modules.nixos.home = { pkgs, username, scheme, ... }:
+  homeManagerModules.lazyvim = { pkgs, scheme, ... }:
     let
       isEverforest = scheme.slug == "everforest-dark" || scheme.slug == "everforest-light";
 
@@ -31,98 +31,96 @@
         '';
     in
     {
-      home-manager.users.${username} = {
-        programs.lazyvim = {
-          enable = true;
-          pluginSource = "latest";
+      programs.lazyvim = {
+        enable = true;
+        pluginSource = "latest";
 
-          extras = {
-            ai.claudecode.enable = true;
-            lang.nix.enable = true;
-            lang.json.enable = true;
-            lang.yaml.enable = true;
-            lang.markdown.enable = true;
-            lang.typescript = {
-              enable = true;
-              installDependencies = true;
-              installRuntimeDependencies = true;
-            };
-            lang.dotnet.enable = true;
-            lang.rust.enable = true;
-            lang.toml.enable = true;
-            lang.docker.enable = true;
-            formatting.prettier.enable = true;
-            linting.eslint.enable = true;
-            dap.core.enable = true;
+        extras = {
+          ai.claudecode.enable = true;
+          lang.nix.enable = true;
+          lang.json.enable = true;
+          lang.yaml.enable = true;
+          lang.markdown.enable = true;
+          lang.typescript = {
+            enable = true;
+            installDependencies = true;
+            installRuntimeDependencies = true;
           };
+          lang.dotnet.enable = true;
+          lang.rust.enable = true;
+          lang.toml.enable = true;
+          lang.docker.enable = true;
+          formatting.prettier.enable = true;
+          linting.eslint.enable = true;
+          dap.core.enable = true;
+        };
 
-          extraPackages = with pkgs; [
-            nixd
-            vtsls
-            alejandra
-            prettierd
-            eslint
-            vscode-langservers-extracted
-            ripgrep
-            fd
-          ];
+        extraPackages = with pkgs; [
+          nixd
+          vtsls
+          alejandra
+          prettierd
+          eslint
+          vscode-langservers-extracted
+          ripgrep
+          fd
+        ];
 
-          plugins = {
-            env = ''
-              return {
-                "tpope/vim-dotenv",
-                lazy = false,
-                config = function()
-                  vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
-                    pattern = { ".env*", ".env.*" },
-                    command = "set filetype=dotenv | setlocal commentstring=#\\ %s",
-                  })
-                end,
-              }
-            '';
-            lsp = ''
-              return {
-                {
-                  "neovim/nvim-lspconfig",
-                  opts = {
-                    codelens = {
-                      enabled = true,
-                    },
-                    inlay_hints = {
-                      enabled = false,
-                      exclude = { "javascript", "javascriptreact" },
-                    },
-                    folds = {
-                      enbaled = true,
-                    },
-                    servers = {
-                      nixd = {
-                        cmd = { "devenv", "lsp" },
-                      },
+        plugins = {
+          env = ''
+            return {
+              "tpope/vim-dotenv",
+              lazy = false,
+              config = function()
+                vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+                  pattern = { ".env*", ".env.*" },
+                  command = "set filetype=dotenv | setlocal commentstring=#\\ %s",
+                })
+              end,
+            }
+          '';
+          lsp = ''
+            return {
+              {
+                "neovim/nvim-lspconfig",
+                opts = {
+                  codelens = {
+                    enabled = true,
+                  },
+                  inlay_hints = {
+                    enabled = false,
+                    exclude = { "javascript", "javascriptreact" },
+                  },
+                  folds = {
+                    enbaled = true,
+                  },
+                  servers = {
+                    nixd = {
+                      cmd = { "devenv", "lsp" },
                     },
                   },
                 },
-              }
-            '';
-            claudecode = ''
-              return {
-                "coder/claudecode.nvim",
-                dependencies = { "folke/snacks.nvim" },
-                opts = {
-                  terminal = {
-                    provider = "external",
-                    provider_opts = {
-                      external_terminal_cmd = "tmux split-window -h %s"
-                    }
+              },
+            }
+          '';
+          claudecode = ''
+            return {
+              "coder/claudecode.nvim",
+              dependencies = { "folke/snacks.nvim" },
+              opts = {
+                terminal = {
+                  provider = "external",
+                  provider_opts = {
+                    external_terminal_cmd = "tmux split-window -h %s"
                   }
-                },
-              }
-            '';
-            colorscheme = lazyvimColorschemePlugin;
-          };
+                }
+              },
+            }
+          '';
+          colorscheme = lazyvimColorschemePlugin;
         };
-
-        home.sessionVariables.EDITOR = "nvim";
       };
+
+      home.sessionVariables.EDITOR = "nvim";
     };
 }

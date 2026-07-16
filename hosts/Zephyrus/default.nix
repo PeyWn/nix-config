@@ -1,4 +1,4 @@
-{ inputs, config, ... }:
+{ inputs, config, lib, ... }:
 let
   hostname = "Zephyrus";
   username = "peywn";
@@ -9,11 +9,13 @@ let
   inherit (config.flake.modules) nixos;
 in
 {
-  configurations.nixos.${hostname}.module = { lib, ... }: {
+  configurations.nixos.${hostname}.module = {
     _module.args = { inherit username hostname scheme; };
     imports = [
       nixos.nix
       nixos.desktop-core
+      nixos.home
+      nixos.user
       nixos.theme
       nixos.niri
       nixos.kde
@@ -26,16 +28,12 @@ in
       nixos.alacritty
       nixos.noctalia
       inputs.nixos-hardware.nixosModules.asus-zephyrus-ga401iv
-      ../hardware/Zephyrus-GA401IV.nix
-      nixos.home
+      ./_hardware.nix
     ];
-
     boot.loader.systemd-boot.enable = true;
     boot.loader.efi.canTouchEfiVariables = true;
-
     networking.hostName = hostname;
     networking.networkmanager.enable = true;
-
     nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
       "nvidia-x11"
       "nvidia-settings"
@@ -43,7 +41,6 @@ in
       "steam"
       "steam-unwrapped"
     ];
-
     nixpkgs.hostPlatform = "x86_64-linux";
     system.stateVersion = "25.11";
   };
