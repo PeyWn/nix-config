@@ -39,6 +39,11 @@
             "Mod+Return".switch-preset-column-width = { };
             "Mod+Shift+R".reset-window-height = { };
           };
+          outputs = {
+            "" = {
+              scale = 1.0;
+            };
+          };
           layout = {
             gaps = 4;
             focus-ring = {
