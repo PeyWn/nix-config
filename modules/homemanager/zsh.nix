@@ -2,6 +2,7 @@
 {
   homeManagerModules.zsh = { pkgs, hostname, ... }: {
     home.sessionPath = [ "$HOME/bin" ];
+    home.sessionVariables.COLORTERM = "truecolor";
     home.packages = with pkgs; [ ripgrep fzf ];
     programs.zoxide.enable = true;
     programs.zsh = {
@@ -21,6 +22,7 @@
         plugins = [ "git" "fzf" "yarn" "npm" ];
       };
       initContent = ''
+        NIX_THEME=everforest-dark 
         rebuild() {
           local theme_flag=""
           local args=()

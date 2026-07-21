@@ -1,7 +1,6 @@
-{ config, ... }:
+{ ... }:
 {
-  flake.modules.nixos.shell = { pkgs, config, ... }: let
-    c = config.theme.colors;
+  flake.modules.nixos.shell = { pkgs, ... }: let
     ts = pkgs.writeShellApplication {
       name = "ts";
       runtimeInputs = with pkgs; [ tmux fzf ];
@@ -51,103 +50,7 @@
         esac
       '';
     };
-    tmux-window-status = pkgs.writeShellApplication {
-      name = "tmux-window-status";
-      runtimeInputs = with pkgs; [ procps gawk coreutils ];
-      text = ''
-      set -eu
-      PID="$1"
-      [ -n "$PID" ] || exit 0
-      stat_line=$(cat /proc/"$PID"/stat 2>/dev/null)
-      [ -n "$stat_line" ] || exit 0
-      fields="''${stat_line##*)}"
-      read -r _ _ pgrp _ _ tpgid _ <<< "$fields"
-      [ "$tpgid" != "$pgrp" ] || exit 0
-      [ "$tpgid" -gt 0 ] 2>/dev/null || exit 0
-      running=false
-      stopped=false
-      found_any=false
-      for p in $(pgrep -g "$tpgid" 2>/dev/null); do
-        found_any=true
-        s=$(awk '{print $3}' /proc/"$p"/stat 2>/dev/null)
-        case "$s" in
-          R) running=true; break ;;
-          T) stopped=true ;;
-        esac
-      done
-      $found_any || exit 0
-
-      STATE_DIR="/tmp/tmux-window-status"
-      mkdir -p "$STATE_DIR"
-      STATEFILE="$STATE_DIR/$tpgid"
-
-      GREEN="#${c.base0B}"
-      RED="#${c.base08}"
-      CYAN="#${c.base0C}"
-
-      if $running; then
-        rm -f "$STATEFILE"
-        echo -n "#[fg=$GREEN]● "
-      elif $stopped; then
-        rm -f "$STATEFILE"
-        echo -n "#[fg=$RED]● "
-      else
-        now=$(date +%s)
-        THRESHOLD=10
-        if [ -f "$STATEFILE" ]; then
-          start=$(cat "$STATEFILE")
-          if [ $((now - start)) -ge "$THRESHOLD" ]; then
-            echo -n "#[fg=$CYAN]● "
-          else
-            echo -n "#[fg=$GREEN]● "
-          fi
-        else
-          echo "$now" > "$STATEFILE"
-          echo -n "#[fg=$GREEN]● "
-        fi
-      fi
-
-      for f in "$STATE_DIR"/*; do
-        t=$(basename "$f")
-        pgrep -g "$t" >/dev/null 2>&1 || rm -f "$f"
-      done
-    '';
-    };
   in {
     environment.systemPackages = [ ts ];
-    programs.tmux = {
-      enable = true;
-      historyLimit = 25000;
-      escapeTime = 10;
-      baseIndex = 1;
-      terminal = "screen-256color";
-      keyMode = "vi";
-      plugins = with pkgs.tmuxPlugins; [
-        open
-        urlview
-      ];
-      extraConfig = ''
-        set -g mouse on
-        set -g set-clipboard on
-        set -g status-position top
-        set-option -g focus-events on
-
-        set -g automatic-rename on
-        set -g automatic-rename-format "#{pane_current_command}"
-
-        set -g status-right "#(pomo)"
-        set -g status-style "fg=#${c.base03}"
-        set -g status-left-style "fg=#${c.base04}"
-        set -g status-bg default
-        set -g status-interval 1
-        set -g status-left ""
-
-        set-window-option -g window-status-current-style "fg=#${c.base0A}"
-        set -g window-status-format "#(${tmux-window-status}/bin/tmux-window-status #{pane_pid})#[fg=#${c.base04}]#I:#W"
-        set -g window-status-current-format "#(${tmux-window-status}/bin/tmux-window-status #{pane_pid})#[fg=#${c.base0A}]#I:#W"
-
-        setw -g pane-base-index 1
-      '';
-    };
   };
 }
