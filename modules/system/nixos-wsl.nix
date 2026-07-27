@@ -4,7 +4,7 @@
     imports = [ inputs.nixos-wsl.nixosModules.default ];
     wsl.enable = true;
     wsl.defaultUser = username;
-    wsl.docker-desktop.enable = false;
+    wsl.docker-desktop.enable = true;
     services.dbus.enable = true;
     systemd.user = {
       sockets.dbus-broker = {
