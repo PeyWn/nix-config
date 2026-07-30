@@ -11,6 +11,7 @@
           "/etc/localtime:/etc/localtime:ro"
           "/run/dbus:/run/dbus:ro"
           "/var/run/avahi-daemon/socket:/var/run/avahi-daemon/socket:ro"
+          "/etc/resolv.conf:/etc/resolv.conf:ro"
         ];
         environment = {
           TZ = "Europe/Stockholm";
@@ -25,11 +26,6 @@
     services.matter-server = {
       enable = true;
       extraArgs.primary-interface = "wlp4s0";
-    };
-
-    services.avahi = {
-      enable = true;
-      nssmdns = true;
     };
 
     systemd.services.matter-server.serviceConfig = {

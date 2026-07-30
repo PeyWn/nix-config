@@ -32,6 +32,12 @@ in
     boot.loader.efi.canTouchEfiVariables = true;
     networking.hostName = hostname;
     networking.networkmanager.enable = true;
+    services.openssh.enable = true;
+    services.avahi = {
+      enable = true;
+      nssmdns4 = true;
+      publish.enable = true;
+    };
     nixpkgs.hostPlatform = "x86_64-linux";
     system.stateVersion = "25.11";
   };

@@ -1,6 +1,7 @@
 { ... }:
 {
   flake.modules.nixos.shell = { pkgs, ... }: {
-    environment.systemPackages = with pkgs; [ just bat htop btop glances gtop glow ];
+    # glances 
+    environment.systemPackages = with pkgs; [ just bat htop btop gtop glow ];
   };
 }
