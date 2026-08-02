@@ -1,0 +1,75 @@
+.TH POWER 1 "August 2026" "power" "User Commands"
+.SH NAME
+power \- manage CPU power profiles and GPU modes on Zephyrus
+.SH SYNOPSIS
+.B power
+.RI [ command ]
+.RI [ args ...]
+.SH DESCRIPTION
+.B power
+is a thin wrapper around
+.BR powerprofilesctl (1)
+and
+.BR supergfxctl (1)
+for the Zephyrus laptop.
+It groups commands into CPU and GPU subgroups and provides a combined
+.B status
+view.
+With no arguments,
+.B power
+behaves as
+.BR "power status" .
+.SH COMMANDS
+.TP
+.BR status
+Show the current CPU profile, GPU mode, AC state and battery status.
+.TP
+.BR battery
+Show battery charge and charging status.
+.SS GPU subgroup: g, gpu, gpu-mode
+.TP
+.BR "g hybrid"
+Switch the dGPU to Hybrid mode (the default on AC).
+.TP
+.BR "g integrated"
+Switch the dGPU to Integrated mode (the default on battery).
+.TP
+.BR "g get"
+Show the current dGPU mode.
+.SS CPU subgroup: c, cpu, cpu-profile
+.TP
+.BR "c save"
+Switch to the power-saver profile.
+.TP
+.BR "c balanced"
+Switch to the balanced profile.
+.TP
+.BR "c perf"
+Switch to the performance profile.
+.TP
+.BR "c get"
+Show the current power profile.
+.SH OPTIONS
+.TP
+.BR \-h ", " \-\-help ", " help
+Print usage information and exit.
+.SH EXAMPLES
+.nf
+power                  # combined status
+power g get            # current GPU mode
+power g hybrid         # enable the dGPU
+power c perf           # maximum performance
+power c save           # battery saving
+.fi
+.SH FILES
+.TP
+.I /sys/class/power_supply/BAT0
+Battery status source.
+.TP
+.I /sys/class/power_supply/AC0
+AC state source.
+.SH SEE ALSO
+.BR powerprofilesctl (1),
+.BR supergfxctl (1)
+.SH AUTHOR
+bjorn

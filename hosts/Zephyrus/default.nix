@@ -27,6 +27,7 @@ in
       nixos.brave
       nixos.alacritty
       nixos.noctalia
+      nixos.power
       inputs.nixos-hardware.nixosModules.asus-zephyrus-ga401iv
       ./_hardware.nix
     ];
