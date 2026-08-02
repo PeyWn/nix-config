@@ -10,6 +10,20 @@
       "just *": "allow",
       "nix-shell *": "allow",
       "nix-env *": "allow",
+      "nix search *": "allow",
+      "rg *": "allow",
+      "find *": "allow",
+      "git log *": "allow",
+      "git stash *": "allow",
+      "git rev-parse *": "allow",
+      "git ls-files *": "allow",
+      "git diff *": "allow",
+      "git status": "allow",
+      "ls *": "allow",
+      "tree *": "allow",
+      "wc *": "allow",
+      "hostname": "allow",
+      "whoami": "allow",
       "*": "ask"
     }
   }

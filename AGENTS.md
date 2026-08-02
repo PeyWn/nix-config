@@ -1,14 +1,25 @@
 # AGENTS.md
 
-NixOS WSL configuration using the Dendritic Pattern. This is a configuration repo — no build, test, lint, or CI exists.
+NixOS configuration using the Dendritic Pattern. This is a configuration repo — no build, test, lint, or CI exists.
+
+## Host Configuration
+
+Host-specific info (repo path, username, rebuild capability) lives in `.opencode/HOST.md` (git-untracked, per-machine). Agents read this for all paths and host awareness.
+
+Example:
+```yaml
+hostname: Zephyrus
+username: peywn
+repo: /home/peywn/.config/nixos
+canRebuild: true
+```
 
 ## Key facts
 
-- **Hosts**: `WSL-IC` (work, with devops/llm), `WSL-Home` (personal, minimal)
-- **Username**: `bjorn`
-- **Rebuild alias**: `rebuild` (defined in `features/shell/zsh.nix`, runs `sudo nixos-rebuild switch --flake /home/nixos#${hostname}`)
+- **Hosts**: `Zephyrus` (laptop), `Gaming-PC` (desktop), `WSL-IC` (work), `WSL-Home` (personal), `NixOS-Server` (home server)
+- **Rebuild alias**: `rebuild` (defined in `features/shell/zsh.nix`, runs `sudo nixos-rebuild switch --flake <repo>#${hostname}`)
 
-## Project structure (current)
+## Project structure
 
 ```
 flake.nix                        # Entry point — auto-imports modules/ and hosts/ via import-tree
@@ -18,20 +29,33 @@ modules/
     home.nix                     # home-manager integration
     nixos-wsl.nix                # WSL enable, defaultUser, docker-desktop, nix-ld
     ssh.nix                      # SSH agent + Azure DevOps / GitHub client config
+    user.nix                     # User account creation
   features/                      # Feature modules (each exports under flake.modules.nixos.<name>)
     git.nix                      # git delta lazygit
     devops.nix                   # k9s kubectl kubelogin-oidc
     llm.nix                      # claude-code, opencode, mcp-nixos + numtide cache
     nixmate.nix                  # nixmate tool
-    lazyvim-home.nix             # LazyVim home-manager module
     shell/                       # MULTIPLE FILES targeting flake.modules.nixos.shell (they merge!)
       zsh.nix                    # zsh, starship, zoxide, oh-my-zsh, aliases, functions
       tmux.nix                   # tmux + plugins
       tools.nix                  # just ranger bat htop gtop glow
       devenv.nix                 # devenv + cachix substituter
+    gaming/                      # Gaming modules targeting flake.modules.nixos.gaming
+      steam.nix                  # Steam + gamemode + gamescope + mangohud
+      lutris.nix                 # Lutris + gamescope session
+    desktop/                     # Desktop environment modules
+      desktop-core.nix           # Fonts, xdg, pipewire, etc.
+      kde.nix                    # KDE Plasma
+      niri.nix                   # Niri compositor
+    server/
+      homeassistant.nix          # Home Assistant with ZHA
+      server-power.nix           # Server power management
 hosts/
-  WSL-IC.nix                     # Work WSL — imports nix shell git llm devops ssh nixmate + home
-  WSL-Home.nix                   # Home WSL — imports nix wsl shell git llm ssh nixmate + home
+  Zephyrus/                      # ASUS laptop — imports gaming, power, nixos-hardware
+  Gaming-PC/                     # Desktop — imports gaming
+  WSL-IC/                        # Work WSL — imports devops, llm
+  WSL-Home/                      # Personal WSL — minimal
+  NixOS-Server/                  # Home server — imports server
 ```
 
 ## Dendritic Pattern rules
@@ -96,6 +120,7 @@ nix eval .#nixosConfigurations.NixOS-Server.config.systemd.services.home-assista
 ## Gotchas
 
 - **Shell module is split across multiple files** in `features/shell/`. They all target `flake.modules.nixos.shell` and get merged. Add shell-related config to an existing file there, or create a new one targeting the same key.
+- **Gaming module is split** across files in `features/gaming/`. They all target `flake.modules.nixos.gaming` and get merged.
 - **llm-agents packages** come from `inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}`, not from `pkgs`.
 - **`programs.nix-ld.enable = true`** is set for binary compatibility (pre-compiled binaries like .NET tools).
 - **`nixpkgs.config.allowUnfree = true`** is set in `llm.nix` for claude-code.
@@ -118,6 +143,82 @@ For home-manager modules, use `flake.modules.homeManager.<name>` instead.
 2. Import it in the host file(s) under `hosts/`.
 
 3. Run `rebuild`.
+
+## Devenv
+
+The repo has a devenv shell with development tools:
+
+- **`devenv.nix`** (root) — adds `nixd` (Nix LSP) and `alejandra` (Nix formatter) as packages
+- **`devenv.yaml`** (root) — inputs from `github:cachix/devenv-nixpkgs/rolling`
+- **`modules/features/shell/devenv.nix`** — NixOS module that installs `devenv` + cachix substituter
+
+Enter the shell with `devenv shell` or enable direnv with `direnv allow`. nixd provides in-editor diagnostics, completions, and hover info for Nix files.
+
+## OpenCode Workflow
+
+The repo includes an agentic workflow system for NixOS configuration changes. Commands in `.opencode/commands/`, agents in `.opencode/agents/`.
+
+### Quick Start
+
+```
+/nix-workflow add rootless docker to WSL-Home
+```
+
+The orchestrator manages the full pipeline. If no input given, it asks what to do.
+
+### Workflow Stages
+
+```
+created → planned → implemented → reviewed → done
+```
+
+| Stage | What happens |
+|-------|-------------|
+| `created` | Spawn ticket agent — interactive scope definition → `thoughts/ticket/` |
+| `planned` | Spawn nix-researcher → findings → orchestrator writes plan with subtasks → user approves → `thoughts/plans/` |
+| `implemented` | Model-analyzer recommends models per-subtask (batch approval) → nix-implementer spawned per subtask with assigned model → subtasks tracked [x] in plan |
+| `reviewed` | Spawn nix-reviewer — nix flake check ALL hosts, git diff analysis, scope compliance |
+| `done` | Present summary, prompt to rebuild |
+
+### Model Routing
+
+The `model-analyzer` agent scores Go+Free models against each subtask's characteristics. All subtask↔model mappings are presented as a batch for one-time user approval. Each subtask then gets a model-specific nix-implementer invocation.
+
+### Scope Enforcement
+
+When something beyond scope is discovered:
+
+1. STOP immediately
+2. Present the finding to the user
+3. Ask: update scope, note as `## Future Ideas`, or ignore
+4. Do NOT proceed without explicit permission
+
+### Commands
+
+| Command | Purpose |
+|---------|---------|
+| `/nix-workflow` | Full pipeline orchestrator — ticket → plan → implement → review |
+| `/ticket` | Create a structured ticket |
+| `/commit` | Create conventional commits |
+| `/nix-update` | Update flake inputs with safety verification |
+| `/ha-logs` | Show Home Assistant logs |
+
+### Agents
+
+| Agent | Purpose | Default Model | Tier |
+|-------|---------|---------------|------|
+| `nix-researcher` | Coordinates research — spawns codebase, thoughts, and web-search agents | deepseek-v4-flash | Go |
+| `nix-implementer` | Implements a single subtask — receives model from orchestrator | per-subtask | Go |
+| `nix-debugger` | Debugs NixOS failures — read-only diagnostics | deepseek-v4-pro | Go |
+| `nix-reviewer` | Reviews implementation — nix flake check all hosts | deepseek-v4-pro | Go |
+| `model-analyzer` | Recommends models per-subtask with cost bias | gpt-5.6-luna | Go |
+| `codebase-locator` | Finds files — Nix-aware, knows Dendritic locations | deepseek-v4-flash | Go |
+| `codebase-analyzer` | Analyzes implementation — Nix-aware | deepseek-v4-pro | Go |
+| `codebase-pattern-finder` | Finds similar implementations — Nix-aware | deepseek-v4-pro | Go |
+| `thoughts-locator` | Finds thoughts/ documents | deepseek-v4-pro | Go |
+| `thoughts-analyzer` | Extracts insights from thoughts documents | deepseek-v4-pro | Go |
+| `web-search-researcher` | Fetches and analyzes web content | gpt-5.6-luna | Go |
+| `ha-debugger` | Debugs Home Assistant failures | deepseek-v4-pro | Go |
 
 ## Commands
 

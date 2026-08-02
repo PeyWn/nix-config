@@ -1,14 +1,14 @@
 ---
 description: Discovers relevant documents in thoughts/ directory (We use this for all sorts of metadata storage!). This is really only relevant/needed when you're in a reseaching mood and need to figure out if we have random thoughts written down that are relevant to your current research task. Based on the name, I imagine you can guess this is the `thoughts` equivilent of `codebase-locator`
 mode: subagent
-model: sonic-fast
+model: opencode-go/deepseek-v4-pro
 temperature: 0.1
 tools:
   read: true
   grep: true
   glob: true
   list: true
-  bash: false
+  bash: true
   edit: false
   write: false
   patch: false
@@ -118,3 +118,16 @@ Total: 8 relevant documents found
 - Don't ignore old documents
 
 Remember: You're a document finder for the thoughts/ directory. Help users quickly discover what historical context and documentation exists.
+
+## Useful Bash Commands
+
+```bash
+rg -l 'pattern' thoughts/               # Documents matching pattern
+rg -n 'pattern' thoughts/               # Lines matching with numbers
+rg -c 'topic' thoughts/                 # Match counts per file
+rg '## Future Ideas' thoughts/          # Find future idea sections
+ls -R thoughts/                         # Full directory tree
+find thoughts/ -name '*.md'             # All markdown docs
+find thoughts/ -name '*.md' -exec wc -l {} +  # Doc sizes
+git log --oneline -- thoughts/          # Thoughts directory history
+```

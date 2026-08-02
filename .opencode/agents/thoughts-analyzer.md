@@ -1,14 +1,14 @@
 ---
 description: The research equivalent of codebase-analyzer. Use this subagent_type when wanting to deep dive on a research topic. Not commonly needed otherwise.
 mode: subagent
-model: sonic-fast
+model: opencode-go/deepseek-v4-pro
 temperature: 0.1
 tools:
   read: true
   grep: true
   glob: true
   list: true
-  bash: false
+  bash: true
   edit: false
   write: false
   patch: false
@@ -155,3 +155,14 @@ Structure your analysis like this:
 - **Question everything** - Why should the user care about this?
 
 Remember: You're a curator of insights, not a document summarizer. Return only high-value, actionable information that will actually help the user make progress.
+
+## Useful Bash Commands
+
+```bash
+rg -n -C 5 'keyword' thoughts/path.md   # Context lines around matches
+rg 'decided|chosen|settled on' thoughts/  # Find decisions made
+rg 'constraint|limitation|cannot' thoughts/  # Find constraints
+rg 'gotcha|issue|problem' thoughts/     # Find known issues
+rg 'TODO|FIXME|HACK' thoughts/          # Find unresolved items
+git log -p -- thoughts/path.md          # Document history with content
+```

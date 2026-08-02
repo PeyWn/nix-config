@@ -1,7 +1,7 @@
 ---
-description: Update flake inputs with safety verification
-agent: build
+description: Update flake inputs with safety verification. Delegates nix operations to nix-debugger agent.
 ---
+
 Update the flake inputs for this NixOS configuration repo safely.
 
 ## Workflow
@@ -18,9 +18,10 @@ Update the flake inputs for this NixOS configuration repo safely.
 2. Run `nix flake check` to verify the update didn't break anything.
 
 3. If check fails:
-   - Invoke the **nix-debugger** subagent to analyze the failure
-   - Report what broke and suggest next steps (rollback, fix, or hold)
+   - Spawn **nix-debugger** to analyze the failure
+   - Report what broke and suggest next steps
 
 4. If check passes:
    - Report which inputs were updated (check `flake.lock` diff)
-   - Ask whether to rebuild: `sudo nixos-rebuild switch --flake /home/nixos#WSL-IC`
+   - Remind the user to commit `flake.lock`
+   - Ask whether to rebuild on the current host (from HOST.md)
