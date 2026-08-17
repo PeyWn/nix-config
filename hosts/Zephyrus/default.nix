@@ -24,7 +24,7 @@ in
       nixos.git
       nixos.llm
       nixos.ssh
-      nixos.brave
+      nixos.apps
       nixos.alacritty
       nixos.noctalia
       nixos.power
@@ -33,6 +33,10 @@ in
     ];
     boot.loader.systemd-boot.enable = true;
     boot.loader.efi.canTouchEfiVariables = true;
+    hardware.bluetooth = {
+      enable = true;
+      powerOnBoot = false;
+    };
     networking.hostName = hostname;
     networking.networkmanager.enable = true;
     nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [

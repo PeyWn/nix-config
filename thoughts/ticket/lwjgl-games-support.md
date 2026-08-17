@@ -1,5 +1,6 @@
 ---
-stage: created
+stage: done
+status: closed
 status: open
 ---
 

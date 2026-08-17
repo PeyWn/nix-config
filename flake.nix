@@ -25,6 +25,8 @@
 
     llm-agents.url = "github:numtide/llm-agents.nix";
 
+    zen-browser.url = "github:0xc000022070/zen-browser-flake";
+
     herdr.url = "github:ogulcancelik/herdr";
 
     nix-wrapper-modules.url = "github:BirdeeHub/nix-wrapper-modules";

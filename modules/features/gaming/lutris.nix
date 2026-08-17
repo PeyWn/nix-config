@@ -21,6 +21,8 @@ in
   {
     environment.systemPackages = [
       pkgs.lutris
+      pkgs.vulkan-tools
+      pkgs.gvfs
       lutris-gamescope
     ];
 

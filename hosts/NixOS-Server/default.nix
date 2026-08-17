@@ -23,7 +23,7 @@ in
       nixos.git
       nixos.llm
       nixos.ssh
-      nixos.brave
+      nixos.apps
       nixos.alacritty
       nixos.noctalia
       ./_hardware.nix
