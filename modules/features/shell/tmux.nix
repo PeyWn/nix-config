@@ -38,13 +38,26 @@
           new)
             new_session "''${2:-}"
             ;;
-          *)
-            session=$( (tmux list-sessions -F '#S' 2>/dev/null; echo "󰆍 New Session") | fzf-tmux -p --prompt="Session> " --exit-0)
-            [ -n "''${session:-}" ] || exit 0
+          "")
+            result=$( (tmux list-sessions -F '#S' 2>/dev/null; echo "󰆍 New Session") | fzf-tmux -p --prompt="Session> " --exit-0 --select-1 --print-query)
+            [ -n "''${result:-}" ] || exit 0
+            query=$(echo "$result" | head -1)
+            session=$(echo "$result" | tail -1)
             if [ "$session" = "󰆍 New Session" ]; then
-              new_session
+              if [ -n "''${query:-}" ] && ! tmux has-session -t "$query" 2>/dev/null; then
+                new_session "$query"
+              else
+                new_session
+              fi
             else
               attach_or_switch "$session"
+            fi
+            ;;
+          *)
+            if tmux has-session -t "$1" 2>/dev/null; then
+              attach_or_switch "$1"
+            else
+              new_session "$1"
             fi
             ;;
         esac
