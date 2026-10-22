@@ -50,7 +50,7 @@
     environment.systemPackages = [
       pkgs.delta
       git-tidy-branches
-      inputs.treehouse.packages.${pkgs.system}.default
+      inputs.treehouse.packages.${pkgs.stdenv.hostPlatform.system}.default
     ];
   };
 }
