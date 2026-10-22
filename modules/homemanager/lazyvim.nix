@@ -79,6 +79,47 @@
               end,
             }
           '';
+          diffview = ''
+            return {
+              {
+                "sindrets/diffview.nvim",
+                cmd = { "DiffviewOpen", "DiffviewClose", "DiffviewToggleFiles", "DiffviewFocusFiles", "DiffviewFileHistory", "DiffviewRefresh" },
+                keys = {
+                  {
+                    "<leader>gdd",
+                    function()
+                      if next(require("diffview.lib").views) == nil then
+                        vim.cmd("DiffviewOpen")
+                      else
+                        vim.cmd("DiffviewClose")
+                      end
+                    end,
+                    desc = "Toggle Diffview",
+                  },
+                  { "<leader>gdf", "<cmd>DiffviewFileHistory %<cr>", desc = "File history (buffer)" },
+                  { "<leader>gdF", "<cmd>DiffviewFileHistory<cr>", desc = "File history (repo)" },
+                  { "<leader>gdt", "<cmd>DiffviewToggleFiles<cr>", desc = "Toggle file panel" },
+                  { "<leader>gdr", "<cmd>DiffviewRefresh<cr>", desc = "Refresh" },
+                  { "<leader>gdh", function() require("gitsigns").diffthis() end, desc = "Diff This" },
+                  { "<leader>gdH", function() require("gitsigns").diffthis("~") end, desc = "Diff This ~" },
+                },
+              },
+              -- free up <leader>gd for the diff group, move snacks pickers into it
+              {
+                "folke/snacks.nvim",
+                keys = {
+                  { "<leader>gd", false },
+                  { "<leader>gD", false },
+                  { "<leader>gds", function() Snacks.picker.git_diff() end, desc = "Hunks (picker)" },
+                  { "<leader>gdS", function() Snacks.picker.git_diff({ base = "origin", group = true }) end, desc = "Hunks vs origin (picker)" },
+                },
+              },
+              {
+                "folke/which-key.nvim",
+                opts = { spec = { { "<leader>gd", group = "diff" } } },
+              },
+            }
+          '';
           lsp = ''
             return {
               {
@@ -92,7 +133,7 @@
                     exclude = { "javascript", "javascriptreact" },
                   },
                   folds = {
-                    enbaled = true,
+                    enabled = true,
                   },
                   servers = {
                     nixd = {
