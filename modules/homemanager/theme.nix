@@ -70,10 +70,5 @@
       };
 
       home.file.".config/glow/glow.yml".text = "style: \"${if isDark then "dark" else "light"}\"\n";
-
-      home.file.".config/herdr/config.toml".text = ''
-        [theme]
-        name = "terminal"
-      '';
     };
 }
