@@ -2,18 +2,6 @@
 
 NixOS configuration using the Dendritic Pattern. This is a configuration repo — no build, test, lint, or CI exists.
 
-## Host Configuration
-
-Host-specific info (repo path, username, rebuild capability) lives in `.opencode/HOST.md` (git-untracked, per-machine). Agents read this for all paths and host awareness.
-
-Example:
-```yaml
-hostname: Zephyrus
-username: peywn
-repo: /home/peywn/.config/nixos
-canRebuild: true
-```
-
 ## Key facts
 
 - **Hosts**: `Zephyrus` (laptop), `Gaming-PC` (desktop), `WSL-IC` (work), `WSL-Home` (personal), `NixOS-Server` (home server)
@@ -153,72 +141,6 @@ The repo has a devenv shell with development tools:
 - **`modules/features/shell/devenv.nix`** — NixOS module that installs `devenv` + cachix substituter
 
 Enter the shell with `devenv shell` or enable direnv with `direnv allow`. nixd provides in-editor diagnostics, completions, and hover info for Nix files.
-
-## OpenCode Workflow
-
-The repo includes an agentic workflow system for NixOS configuration changes. Commands in `.opencode/commands/`, agents in `.opencode/agents/`.
-
-### Quick Start
-
-```
-/nix-workflow add rootless docker to WSL-Home
-```
-
-The orchestrator manages the full pipeline. If no input given, it asks what to do.
-
-### Workflow Stages
-
-```
-created → planned → implemented → reviewed → done
-```
-
-| Stage | What happens |
-|-------|-------------|
-| `created` | Spawn ticket agent — interactive scope definition → `thoughts/ticket/` |
-| `planned` | Spawn nix-researcher → findings → orchestrator writes plan with subtasks → user approves → `thoughts/plans/` |
-| `implemented` | Model-analyzer recommends models per-subtask (batch approval) → nix-implementer spawned per subtask with assigned model → subtasks tracked [x] in plan |
-| `reviewed` | Spawn nix-reviewer — nix flake check ALL hosts, git diff analysis, scope compliance |
-| `done` | Present summary, prompt to rebuild |
-
-### Model Routing
-
-The `model-analyzer` agent scores Go+Free models against each subtask's characteristics. All subtask↔model mappings are presented as a batch for one-time user approval. Each subtask then gets a model-specific nix-implementer invocation.
-
-### Scope Enforcement
-
-When something beyond scope is discovered:
-
-1. STOP immediately
-2. Present the finding to the user
-3. Ask: update scope, note as `## Future Ideas`, or ignore
-4. Do NOT proceed without explicit permission
-
-### Commands
-
-| Command | Purpose |
-|---------|---------|
-| `/nix-workflow` | Full pipeline orchestrator — ticket → plan → implement → review |
-| `/ticket` | Create a structured ticket |
-| `/commit` | Create conventional commits |
-| `/nix-update` | Update flake inputs with safety verification |
-| `/ha-logs` | Show Home Assistant logs |
-
-### Agents
-
-| Agent | Purpose | Default Model | Tier |
-|-------|---------|---------------|------|
-| `nix-researcher` | Coordinates research — spawns codebase, thoughts, and web-search agents | deepseek-v4-flash | Go |
-| `nix-implementer` | Implements a single subtask — receives model from orchestrator | per-subtask | Go |
-| `nix-debugger` | Debugs NixOS failures — read-only diagnostics | deepseek-v4-pro | Go |
-| `nix-reviewer` | Reviews implementation — nix flake check all hosts | deepseek-v4-pro | Go |
-| `model-analyzer` | Recommends models per-subtask with cost bias | gpt-5.6-luna | Go |
-| `codebase-locator` | Finds files — Nix-aware, knows Dendritic locations | deepseek-v4-flash | Go |
-| `codebase-analyzer` | Analyzes implementation — Nix-aware | deepseek-v4-pro | Go |
-| `codebase-pattern-finder` | Finds similar implementations — Nix-aware | deepseek-v4-pro | Go |
-| `thoughts-locator` | Finds thoughts/ documents | deepseek-v4-pro | Go |
-| `thoughts-analyzer` | Extracts insights from thoughts documents | deepseek-v4-pro | Go |
-| `web-search-researcher` | Fetches and analyzes web content | gpt-5.6-luna | Go |
-| `ha-debugger` | Debugs Home Assistant failures | deepseek-v4-pro | Go |
 
 ## Commands
 
