@@ -33,7 +33,7 @@ modules/
   features/                      # Feature modules (each exports under flake.modules.nixos.<name>)
     git.nix                      # git delta lazygit
     devops.nix                   # k9s kubectl kubelogin-oidc
-    llm.nix                      # claude-code, opencode, mcp-nixos + numtide cache
+    llm.nix                      # claude-code, opencode2 (OpenCode 2, exposed as `opencode`), mcp-nixos + numtide cache
     nixmate.nix                  # nixmate tool
     shell/                       # MULTIPLE FILES targeting flake.modules.nixos.shell (they merge!)
       zsh.nix                    # zsh, starship, zoxide, oh-my-zsh, aliases, functions

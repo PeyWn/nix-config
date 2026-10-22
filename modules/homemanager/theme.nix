@@ -6,9 +6,12 @@
       isDark = scheme.variant == "dark";
     in
     {
-      home.file.".config/opencode/tui.json".text = builtins.toJSON {
-        "$schema" = "https://opencode.ai/tui.json";
-        theme = "nix-colors";
+      home.file.".config/opencode/cli.json".text = builtins.toJSON {
+        "$schema" = "https://opencode.ai/v2/cli.json";
+        theme = {
+          name = "nix-colors";
+          mode = scheme.variant;
+        };
       };
 
       home.file.".config/opencode/themes/nix-colors.json".text = builtins.toJSON {

@@ -1,30 +1,30 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "lsp": true,
-  "permission": {
-    "bash": {
-      "nix *": "allow",
-      "nixos-rebuild *": "allow",
-      "sudo nixos-rebuild *": "allow",
-      "rebuild": "allow",
-      "just *": "allow",
-      "nix-shell *": "allow",
-      "nix-env *": "allow",
-      "nix search *": "allow",
-      "rg *": "allow",
-      "find *": "allow",
-      "git log *": "allow",
-      "git stash *": "allow",
-      "git rev-parse *": "allow",
-      "git ls-files *": "allow",
-      "git diff *": "allow",
-      "git status": "allow",
-      "ls *": "allow",
-      "tree *": "allow",
-      "wc *": "allow",
-      "hostname": "allow",
-      "whoami": "allow",
-      "*": "ask"
-    }
+  "permissions": [
+    { "action": "shell", "resource": "*", "effect": "ask" },
+    { "action": "shell", "resource": "nix *", "effect": "allow" },
+    { "action": "shell", "resource": "nixos-rebuild *", "effect": "allow" },
+    { "action": "shell", "resource": "sudo nixos-rebuild *", "effect": "allow" },
+    { "action": "shell", "resource": "rebuild", "effect": "allow" },
+    { "action": "shell", "resource": "just *", "effect": "allow" },
+    { "action": "shell", "resource": "nix-shell *", "effect": "allow" },
+    { "action": "shell", "resource": "nix-env *", "effect": "allow" },
+    { "action": "shell", "resource": "nix search *", "effect": "allow" },
+    { "action": "shell", "resource": "rg *", "effect": "allow" },
+    { "action": "shell", "resource": "find *", "effect": "allow" },
+    { "action": "shell", "resource": "git log *", "effect": "allow" },
+    { "action": "shell", "resource": "git rev-parse *", "effect": "allow" },
+    { "action": "shell", "resource": "git ls-files *", "effect": "allow" },
+    { "action": "shell", "resource": "git diff *", "effect": "allow" },
+    { "action": "shell", "resource": "git status", "effect": "allow" },
+    { "action": "shell", "resource": "ls *", "effect": "allow" },
+    { "action": "shell", "resource": "tree *", "effect": "allow" },
+    { "action": "shell", "resource": "wc *", "effect": "allow" },
+    { "action": "shell", "resource": "hostname", "effect": "allow" },
+    { "action": "shell", "resource": "whoami", "effect": "allow" }
+  ],
+  "experimental": {
+    "subagent_depth": 2
   }
 }
