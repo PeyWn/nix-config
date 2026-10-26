@@ -1,6 +1,6 @@
 { ... }:
 {
-  flake.modules.nixos.server = { lib, ... }: {
+  flake.modules.nixos.server = { lib, pkgs, ... }: {
     virtualisation.oci-containers = {
       backend = "podman";
       containers."homeassistant" = {
@@ -32,6 +32,10 @@
       ProtectProc = lib.mkForce "default";
       BindReadOnlyPaths = [ "/sys/class/net" ];
     };
+
+    systemd.services.podman-homeassistant.serviceConfig.ExecStartPre = lib.mkBefore [
+      "${pkgs.bash}/bin/bash -c 'for i in $(seq 1 30); do if ${pkgs.iproute2}/bin/ip addr show wlp4s0 | grep -q \"inet \"; then exit 0; fi; sleep 1; done; exit 1'"
+    ];
 
     networking.firewall = {
       allowedTCPPorts = [ 8123 ];
