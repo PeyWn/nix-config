@@ -10,9 +10,6 @@
             layout = "us";
             options = "caps:escape";
           };
-          spawn-at-startup = [
-            "noctalia-shell"
-          ];
           binds = {
             "Mod+T".spawn-sh = "alacritty";
             "Mod+B".spawn-sh = "brave";
@@ -51,7 +48,6 @@
               active-color = "#${c.base0D}";
               inactive-color = "#${c.base02}";
             };
-            struts.left = 48;
           };
         };
       };

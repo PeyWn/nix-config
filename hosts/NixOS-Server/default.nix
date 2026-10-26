@@ -25,7 +25,6 @@ in
       nixos.ssh
       nixos.apps
       nixos.alacritty
-      nixos.noctalia
       ./_hardware.nix
     ];
     boot.loader.systemd-boot.enable = true;
