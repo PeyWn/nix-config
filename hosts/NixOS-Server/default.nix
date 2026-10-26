@@ -35,7 +35,7 @@ in
     services.avahi = {
       enable = true;
       nssmdns4 = true;
-      publish.enable = true;
+      settings.publish."disable-publishing" = false;
     };
     nixpkgs.hostPlatform = "x86_64-linux";
     system.stateVersion = "25.11";
