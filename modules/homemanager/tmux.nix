@@ -19,6 +19,10 @@
         tmux-which-key
       ];
       extraConfig = ''
+        ### Modified keys (Shift+Enter, ...) for Pi
+        set -g extended-keys on
+        set -g extended-keys-format csi-u
+
         ### True Color Support
         set -ga terminal-overrides ",*256col*:Tc"
         set -g set-clipboard on
