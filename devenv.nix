@@ -1,5 +1,12 @@
 { pkgs, lib, config, inputs, ... }:
 
 {
-  packages = [ pkgs.nixd pkgs.alejandra ];
+  packages = with pkgs; [
+    nixd
+    mcp-nixos
+    alejandra
+    nixfmt-rfc-style
+    statix
+    deadnix
+  ];
 }
