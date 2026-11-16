@@ -7,12 +7,13 @@ NixOS configuration for five hosts, using the Dendritic Pattern.
 | Host | Machine | Notable modules |
 |---|---|---|
 | `Zephyrus` | ASUS laptop | niri, KDE, gaming, power |
-| `Gaming-PC` | Desktop | niri, KDE, gaming |
+| `Gaming-PC` | Desktop, CachyOS | standalone home-manager |
 | `NixOS-Server` | Home server | KDE, server (Home Assistant) |
 | `WSL-IC` | Work WSL | devops |
 | `WSL-Home` | Personal WSL | - |
 
-Each host's imports are listed in `hosts/<host>/default.nix`.
+Each host's `hosts/<host>/default.nix` holds either `configurations.nixos` or `configurations.home`.
+A NixOS host lists its imports there.
 
 ## Layout
 
@@ -30,6 +31,8 @@ Each host's imports are listed in `hosts/<host>/default.nix`.
 - NixOS modules are `deferredModule` values under `flake.modules.nixos.<name>`, and hosts import them as `nixos.<name>`.
   The name is the key a file sets, not its filename: `system/flake.nix` sets `nixos.nix`, `system/nixos-wsl.nix` sets `nixos.wsl`, and the files in `features/shell/`, `features/gaming/` and `features/server/` each merge into one module named after their directory.
 - Home-manager modules set `homeManagerModules.<name>`; `features/home.nix` applies all of them to every host that imports `nixos.home`.
+- `flake.modules.homeManager.base` applies every `homeManagerModules` module.
+  It is shared by `nixos.home` and the standalone `configurations.home.<user>@<host>` entries.
 - Per-host values (`username`, `hostname`, `scheme`) are `let` bindings in the host file, passed into modules via `_module.args`.
   Never use `specialArgs`.
 - To add a feature, create `modules/features/<name>.nix` setting `flake.modules.nixos.<name>`, then add `nixos.<name>` to the hosts that need it.
@@ -47,6 +50,7 @@ Each host's imports are listed in `hosts/<host>/default.nix`.
 - `just --list` shows the recipes; `just check` (`nix flake check`) is the only verification.
 - `rebuild` switches the current host; `rebuild --theme <name>` also selects a scheme from `flake.customSchemes` (default `everforest-dark`).
   The theme comes from `NIX_THEME`, so it only applies to `--impure` evaluations; a pure evaluation always uses the default.
+- On non-NixOS hosts `rebuild` runs `home-manager switch` instead of `nixos-rebuild`.
 - `devenv.nix` provides `nixd` and `alejandra`.
 
 ## Home Assistant (NixOS-Server)

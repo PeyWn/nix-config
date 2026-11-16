@@ -1,8 +1,8 @@
 { ... }:
 {
-  flake.modules.nixos.shell = { pkgs, ... }: {
+  flake.modules.nixos.shell = {
     programs.zsh.enable = true;
-    environment.systemPackages = with pkgs; [ ripgrep fzf ];
+    programs.git.enable = true;
     security.sudo.wheelNeedsPassword = true;
   };
 }

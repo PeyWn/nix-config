@@ -20,7 +20,6 @@ in
       nixos.kde
       nixos.server
       nixos.shell
-      nixos.git
       nixos.llm
       nixos.ssh
       nixos.apps

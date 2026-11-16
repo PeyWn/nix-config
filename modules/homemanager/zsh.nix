@@ -1,6 +1,6 @@
 { ... }:
 {
-  homeManagerModules.zsh = { pkgs, hostname, ... }: {
+  homeManagerModules.zsh = { pkgs, hostname, username, ... }: {
     home.sessionPath = [ "$HOME/bin" ];
     home.sessionVariables.COLORTERM = "truecolor";
     home.packages = with pkgs; [ ripgrep fzf ];
@@ -33,10 +33,12 @@
               *) args+=("$1"); shift ;;
             esac
           done
-          if [[ -n "$theme_flag" ]]; then
-            sudo NIX_THEME="$theme_flag" nixos-rebuild switch --impure --flake "$HOME/.config/nixos#${hostname}" "''${args[@]}"
+          local impure=()
+          [[ -n "$theme_flag" ]] && impure=(--impure)
+          if [[ -e /etc/NIXOS ]]; then
+            sudo NIX_THEME="$theme_flag" nixos-rebuild switch "''${impure[@]}" --flake "$HOME/.config/nixos#${hostname}" "''${args[@]}"
           else
-            sudo nixos-rebuild switch --flake "$HOME/.config/nixos#${hostname}" "''${args[@]}"
+            NIX_THEME="$theme_flag" home-manager switch "''${impure[@]}" --flake "$HOME/.config/nixos#${username}@${hostname}" "''${args[@]}"
           fi
         }
 

@@ -18,7 +18,6 @@ in
       nixos.user
       nixos.theme
       nixos.shell
-      nixos.git
       nixos.llm
       nixos.devops
       nixos.ssh

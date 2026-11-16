@@ -21,7 +21,6 @@ in
       nixos.kde
       nixos.gaming
       nixos.shell
-      nixos.git
       nixos.llm
       nixos.ssh
       nixos.apps

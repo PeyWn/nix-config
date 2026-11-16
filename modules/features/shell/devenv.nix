@@ -1,8 +1,6 @@
 { ... }:
 {
-  flake.modules.nixos.shell = { pkgs, username, ... }: {
-    environment.systemPackages = [ pkgs.devenv ];
-
+  flake.modules.nixos.shell = { username, ... }: {
     nix.settings = {
       trusted-users = [ username ];
       extra-substituters = [ "https://devenv.cachix.org" ];
