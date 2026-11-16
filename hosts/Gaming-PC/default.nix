@@ -13,6 +13,7 @@ in
     system = "x86_64-linux";
     module = {
       _module.args = { inherit username hostname scheme; };
+      home.sessionVariables.PROTON_ENABLE_WAYLAND = "1";
       imports = [
         homeManager.base
         homeManager.generic-linux
