@@ -21,8 +21,6 @@
 
     lazyvim-nix.url = "github:pfassina/lazyvim-nix";
 
-    nixmate.url = "github:daskladas/nixmate";
-
     llm-agents.url = "github:numtide/llm-agents.nix";
 
     zen-browser.url = "github:0xc000022070/zen-browser-flake";

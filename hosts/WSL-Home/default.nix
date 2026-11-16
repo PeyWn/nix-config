@@ -20,7 +20,6 @@ in
       nixos.shell
       nixos.llm
       nixos.ssh
-      nixos.nixmate
     ];
     nixpkgs.hostPlatform = "x86_64-linux";
     networking.hostName = hostname;
