@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eu
+
+# Git runs pre-commit in the working tree root.
+exec just check

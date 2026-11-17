@@ -21,8 +21,16 @@ update:
 update-input input:
     nix flake update {{input}}
 
+# Check whitespace and evaluate/build the flake without updating flake.lock.
 check:
-    nix flake check
+    git diff --check
+    git diff --cached --check
+    nix flake check --no-write-lock-file
+
+# Enable the tracked pre-commit hook for this clone.
+install-hooks:
+    chmod +x .githooks/pre-commit
+    git config --local core.hooksPath .githooks
 
 gc:
     sudo nix-collect-garbage -d
