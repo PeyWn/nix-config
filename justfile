@@ -3,17 +3,10 @@
 default:
     just --list
 
-rebuild theme:
-    zsh -i -c "rebuild -- --theme {{theme}}"
-
-switch-IC theme:
-    sudo NIX_THEME="{{theme}}" nixos-rebuild switch --impure --flake ./#WSL-IC
-
-switch-WSL-Home theme:
-    sudo NIX_THEME="{{theme}}" nixos-rebuild switch --impure --flake ./#WSL-Home
-
-switch-Server theme:
-    sudo NIX_THEME="{{theme}}" nixos-rebuild switch --impure --flake ./#NixOS-Server
+# Rebuild the current host, forwarding options to the shell function.
+[positional-arguments]
+rebuild *args:
+    zsh -i -c 'rebuild "$@"' -- "$@"
 
 update:
     nix flake update
@@ -32,8 +25,18 @@ install-hooks:
     chmod +x .githooks/pre-commit
     git config --local core.hooksPath .githooks
 
+# Collect unused store paths without deleting profile generations.
 gc:
-    sudo nix-collect-garbage -d
+    sudo nix-collect-garbage
+
+# Prune old user and system generations, then collect unused store paths.
+gc-old age="30d":
+    nix-collect-garbage --delete-older-than {{quote(age)}}
+    sudo nix-collect-garbage --delete-older-than {{quote(age)}}
+
+# Deduplicate identical store files without deleting generations.
+optimise:
+    sudo nix-store --optimise
 
 power:
     @if command -v power >/dev/null 2>&1; then \
