@@ -88,13 +88,6 @@
       ++ (with pkgs; [
         bun
         mcp-nixos
-        (python3.withPackages (ps: with ps; [
-          requests
-          httpx
-          pyyaml
-          rich
-          pydantic
-        ]))
       ]);
   };
 }
