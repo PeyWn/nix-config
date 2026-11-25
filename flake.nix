@@ -19,7 +19,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    lazyvim-nix.url = "github:pfassina/lazyvim-nix";
+    lazyvim-nix.url = "github:pfassina/lazyvim-nix/5fd3c18f49d5d82c7411c56656c49aa27ca4d06e";
 
     llm-agents.url = "github:numtide/llm-agents.nix";
 
